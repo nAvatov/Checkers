@@ -11,12 +11,18 @@ public class Cell : MonoBehaviour, IPointerClickHandler
     [SerializeField] Color activeColor;
     [SerializeField] Color inactiveColor;
     [Header("Checkers")]
-    [SerializeField] GameObject greenCheker, redChecker, pinkChecker, blueChekcer;
+    [SerializeField] GameObject greenCheker;
+    [SerializeField] GameObject redChecker;
+    [SerializeField] GameObject pinkChecker;
+    [SerializeField] GameObject blueChekcer;
+    [SerializeField] GameObject majorityState;
+
 
 
     private GameController gameController;
     private int coordX, coordY;
     private bool haveCheckerOn;
+    private bool haveMajorCheckerOn;
     private bool active;
     private CheckerType typeOfCheckerOnMe;
 
@@ -27,6 +33,16 @@ public class Cell : MonoBehaviour, IPointerClickHandler
 
         set {
             haveCheckerOn = value;
+        }
+    }
+
+    public bool HaveMajorCheckerOn { 
+        get {
+            return haveMajorCheckerOn;
+        }
+
+        set {
+            haveMajorCheckerOn = value;
         }
     }
 
@@ -47,7 +63,6 @@ public class Cell : MonoBehaviour, IPointerClickHandler
     public void OnPointerClick(PointerEventData pointerEventData) {
         if (active) {
             gameController.SetChosenChecker(coordX, coordY);
-            //HandleCellSelection(true);
         }
     }
         
@@ -62,7 +77,7 @@ public class Cell : MonoBehaviour, IPointerClickHandler
        gameController = gc;
     }
 
-    public void HandleCheckerOnMe(CheckerType checker, bool isPlacing = true) {
+    public void HandleCheckerOnMe(CheckerType checker, bool isPlacing = true, bool isMajorChecker = false) {
         switch(checker) {
             case CheckerType.red: {
                 redChecker.SetActive(isPlacing);
@@ -83,6 +98,9 @@ public class Cell : MonoBehaviour, IPointerClickHandler
         }
 
         haveCheckerOn = isPlacing;
+        haveMajorCheckerOn = isMajorChecker;
+        majorityState.SetActive(isMajorChecker);
+
         if (isPlacing) {
             typeOfCheckerOnMe = checker;
         }
