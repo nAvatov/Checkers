@@ -61,8 +61,11 @@ public class Cell : MonoBehaviour, IPointerClickHandler
     #region UnityMethods
 
     public void OnPointerClick(PointerEventData pointerEventData) {
-        if (active) {
-            gameController.SetChosenChecker(coordX, coordY);
+        if (active && !gameController.GameIsOver) {
+            if ((haveCheckerOn && typeOfCheckerOnMe == gameController.CurrentCheckersTypeTurn) || !haveCheckerOn)
+            {
+                gameController.SetChosenChecker(coordX, coordY);
+            }
         }
     }
         

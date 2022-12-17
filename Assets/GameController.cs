@@ -13,9 +13,29 @@ public class GameController : MonoBehaviour
 {
     private Cell[,] matrixOfCells;
     private int matrixSize = 11;
+    private int singleColorCheckersAmount = 12;
     private RectTransform rTransform;
 
     private int chosenX = -1, chosenY = -1;
+
+    private List<CheckersPlayer> players;
+    private CheckersPlayer currentPlayer;
+    private CheckersPlayer nextPlayer;
+    private bool gameIsOver = false;
+    private System.Action legalMoveDone;
+    
+    public bool GameIsOver {
+        get {
+            return gameIsOver;
+        }
+    }
+
+    public CheckerType CurrentCheckersTypeTurn {
+        get {
+            return currentPlayer.CheckersTypeColor;
+        }
+    }
+
 
 
     #region Unity Methods
@@ -23,11 +43,19 @@ public class GameController : MonoBehaviour
     private void Awake() {
         rTransform = GetComponent<RectTransform>();
         matrixOfCells = new Cell[matrixSize,matrixSize];
+        players = new List<CheckersPlayer> { 
+            new CheckersPlayer(CheckerType.blue, singleColorCheckersAmount),   
+            new CheckersPlayer(CheckerType.pink, singleColorCheckersAmount),
+            new CheckersPlayer(CheckerType.red, singleColorCheckersAmount),
+            new CheckersPlayer(CheckerType.green, singleColorCheckersAmount)
+        };
+        legalMoveDone = ChangeCurrentPlayer;
     }
 
     private void Start() {
         InitializePlayfieldWithCells();
         PlaceCheckersOnBoard();
+        currentPlayer = players[0];
     }
     
     #endregion
@@ -35,6 +63,7 @@ public class GameController : MonoBehaviour
     #region Public Methods
         
     public void SetChosenChecker(int i, int j) { 
+        Debug.Log("Now : " + currentPlayer.CheckersTypeColor.ToString());
         if (chosenX == -1 || chosenY == -1) { // Reselection
             chosenX = i; chosenY = j;
             matrixOfCells[chosenX, chosenY].HandleCellSelection(true);
@@ -70,7 +99,6 @@ public class GameController : MonoBehaviour
         else {
             HandleMajorCheckerMoves(chosenBefore, i, j);
         }
-        
         chosenX = -1; chosenY = -1;
     }
 
@@ -131,16 +159,20 @@ public class GameController : MonoBehaviour
         if (victimX != -1 && victimY != -1) { 
             matrixOfCells[victimX, victimY].HandleCheckerOnMe(matrixOfCells[victimX, victimY].TypeOfCheckerOnMe, false, false); // Just killed one checker!
             Debug.Log("ORDINARY CHECKER KILLED SOMEONE");
+            if (!IsThereSomeMoreMovesAvaiable(targetX, targetY)) { // If there no more any legal moves - change player. Otherwise - give player a chance.
+                legalMoveDone.Invoke();
+            }
         }
 
         if (majorityCondition) {
             matrixOfCells[targetX,targetY].HaveMajorCheckerOn = true; 
             matrixOfCells[targetX,targetY].HandleCheckerOnMe(transitionCheckerBuffer, true, true); // Place checker on new position (2nd click)
             Debug.Log("ORDINARY CHECKER BECAME MAJOR");
-        }
-        else {
+            if (victimX == -1 && victimY == -1) legalMoveDone.Invoke();
+        } else {
             matrixOfCells[targetX,targetY].HandleCheckerOnMe(transitionCheckerBuffer); // Place checker on new position (2nd click)
             Debug.Log("ORDINARY CHECKER MOVED");
+            if (victimX == -1 && victimY == -1) legalMoveDone.Invoke();
         }
     }
 
@@ -170,6 +202,7 @@ public class GameController : MonoBehaviour
         if (previousCell.HaveMajorCheckerOn) {
             if (previousCell.HaveCheckerOn && !matrixOfCells[targetX, targetY].HaveCheckerOn) { // Check if chosen cell have checker on and new cell doesn't have yet
                 CheckMajorCheckerMoveType(previousCell, targetX, targetY);
+                legalMoveDone.Invoke();
             }
         }
     }
@@ -210,6 +243,59 @@ public class GameController : MonoBehaviour
             matrixOfCells[x, y].HandleCheckerOnMe(transitionCheckerBuffer, true, true);
             Debug.Log("MAJOR KILLED SOMEONE");
         }
+    }
+
+    private void ChangeCurrentPlayer() {
+        if (players.Count == 1) {
+            Debug.Log(players[0].CheckersTypeColor.ToString() + " player won!");
+            gameIsOver = true;
+        } else {
+            currentPlayer = players[players.IndexOf(currentPlayer) == 3 ? 0 : players.IndexOf(currentPlayer) + 1];
+        }
+    }
+
+    private bool IsThereSomeMoreMovesAvaiable(int newX, int newY) {
+        if ((newX - 2) is >= 0 and <= 10) {
+            if ((newY - 2) is >= 0 and <= 10) {
+                if (!matrixOfCells[newX - 2, newY - 2].HaveCheckerOn) {
+                    if (matrixOfCells[newX - 1, newY - 1].HaveCheckerOn && matrixOfCells[newX - 1, newY - 1].TypeOfCheckerOnMe != CurrentCheckersTypeTurn) {
+                        Debug.Log("top left is way");
+                        return true;
+                    }
+                }
+            }
+
+            if ((newY + 2) is >= 0 and <= 10) {
+                if (!matrixOfCells[newX - 2, newY + 2].HaveCheckerOn) {
+                    if (matrixOfCells[newX - 1, newY + 1].HaveCheckerOn && matrixOfCells[newX - 1, newY + 1].TypeOfCheckerOnMe != CurrentCheckersTypeTurn) {
+                        Debug.Log("top right is way");
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if ((newX + 2) is >= 0 and <= 10) {
+            if ((newY - 2) is >= 0 and <= 10) {
+                if (!matrixOfCells[newX + 2, newY - 2].HaveCheckerOn) {
+                    if (matrixOfCells[newX + 1, newY - 1].HaveCheckerOn && matrixOfCells[newX + 1, newY - 1].TypeOfCheckerOnMe != CurrentCheckersTypeTurn) {
+                        Debug.Log("bot left is way");
+                        return true;
+                    }
+                }
+            }
+
+            if ((newY + 2) is >= 0 and <= 10) {
+                if (!matrixOfCells[newX + 2, newY + 2].HaveCheckerOn) {
+                    if (matrixOfCells[newX + 1, newY + 1].HaveCheckerOn && matrixOfCells[newX + 1, newY + 1].TypeOfCheckerOnMe != CurrentCheckersTypeTurn) {
+                        Debug.Log("bot right is way");
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
     #endregion
 }
