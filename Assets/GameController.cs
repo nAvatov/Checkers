@@ -11,6 +11,8 @@ public enum CheckerType {
 
 public class GameController : MonoBehaviour
 {
+
+    [SerializeField] Notification notification;
     private Cell[,] matrixOfCells;
     private int matrixSize = 11;
     private int singleColorCheckersAmount = 12;
@@ -55,7 +57,8 @@ public class GameController : MonoBehaviour
     private void Start() {
         InitializePlayfieldWithCells();
         PlaceCheckersOnBoard();
-        currentPlayer = players[0];
+        currentPlayer = players[new System.Random().Next(0, 3)];
+        notification.ShowNotification(currentPlayer.CheckersTypeColor.ToString() + ", you first");
     }
     
     #endregion
@@ -247,10 +250,11 @@ public class GameController : MonoBehaviour
 
     private void ChangeCurrentPlayer() {
         if (players.Count == 1) {
-            Debug.Log(players[0].CheckersTypeColor.ToString() + " player won!");
+            notification.ShowNotification(players[0].CheckersTypeColor.ToString() + " player won!");
             gameIsOver = true;
         } else {
             currentPlayer = players[players.IndexOf(currentPlayer) == 3 ? 0 : players.IndexOf(currentPlayer) + 1];
+            notification.ShowNotification(currentPlayer.CheckersTypeColor.ToString() + ", your turn");
         }
     }
 
