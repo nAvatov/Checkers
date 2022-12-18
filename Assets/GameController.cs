@@ -14,7 +14,7 @@ public class GameController : MonoBehaviour
 
     [SerializeField] Notification notification;
     private Cell[,] matrixOfCells;
-    private int matrixSize = 11;
+    private const int matrixSize = 11;
     private int singleColorCheckersAmount = 12;
     private RectTransform rTransform;
 
@@ -66,7 +66,6 @@ public class GameController : MonoBehaviour
     #region Public Methods
         
     public void SetChosenChecker(int i, int j) { 
-        Debug.Log("Now : " + currentPlayer.CheckersTypeColor.ToString());
         if (chosenX == -1 || chosenY == -1) { // Reselection
             chosenX = i; chosenY = j;
             matrixOfCells[chosenX, chosenY].HandleCellSelection(true);
@@ -161,7 +160,8 @@ public class GameController : MonoBehaviour
 
         if (victimX != -1 && victimY != -1) { 
             matrixOfCells[victimX, victimY].HandleCheckerOnMe(matrixOfCells[victimX, victimY].TypeOfCheckerOnMe, false, false); // Just killed one checker!
-            Debug.Log("ORDINARY CHECKER KILLED SOMEONE");
+            ReduceCheckerFromPlayer(matrixOfCells[victimX, victimY].TypeOfCheckerOnMe);
+
             if (!IsThereSomeMoreMovesAvaiable(targetX, targetY)) { // If there no more any legal moves - change player. Otherwise - give player a chance.
                 legalMoveDone.Invoke();
             }
@@ -170,11 +170,9 @@ public class GameController : MonoBehaviour
         if (majorityCondition) {
             matrixOfCells[targetX,targetY].HaveMajorCheckerOn = true; 
             matrixOfCells[targetX,targetY].HandleCheckerOnMe(transitionCheckerBuffer, true, true); // Place checker on new position (2nd click)
-            Debug.Log("ORDINARY CHECKER BECAME MAJOR");
-            if (victimX == -1 && victimY == -1) legalMoveDone.Invoke();
+            if (!IsThereMoreMovesAvaiableForMajorChecker(targetX,targetY)) legalMoveDone.Invoke();
         } else {
             matrixOfCells[targetX,targetY].HandleCheckerOnMe(transitionCheckerBuffer); // Place checker on new position (2nd click)
-            Debug.Log("ORDINARY CHECKER MOVED");
             if (victimX == -1 && victimY == -1) legalMoveDone.Invoke();
         }
     }
@@ -205,7 +203,6 @@ public class GameController : MonoBehaviour
         if (previousCell.HaveMajorCheckerOn) {
             if (previousCell.HaveCheckerOn && !matrixOfCells[targetX, targetY].HaveCheckerOn) { // Check if chosen cell have checker on and new cell doesn't have yet
                 CheckMajorCheckerMoveType(previousCell, targetX, targetY);
-                legalMoveDone.Invoke();
             }
         }
     }
@@ -234,7 +231,7 @@ public class GameController : MonoBehaviour
             CheckerType transitionCheckerBuffer = majorCheckerCell.TypeOfCheckerOnMe; // Remember checker type from previous position
             majorCheckerCell.HandleCheckerOnMe(transitionCheckerBuffer, false, false); // Make cell empty and remove majority status from it
             matrixOfCells[x, y].HandleCheckerOnMe(transitionCheckerBuffer, true, true);
-
+            legalMoveDone.Invoke();
         }
 
         if (countOfVictims == 1 && lastFoundCell.TypeOfCheckerOnMe != majorCheckerCell.TypeOfCheckerOnMe) {
@@ -242,9 +239,12 @@ public class GameController : MonoBehaviour
             majorCheckerCell.HandleCheckerOnMe(transitionCheckerBuffer, false, false); // Make cell empty and remove majority status from it
 
             lastFoundCell.HandleCheckerOnMe(lastFoundCell.TypeOfCheckerOnMe, false, false); // Killing the victim. Be sure that u killed any possible type of enemy checker (major also killable)
+            ReduceCheckerFromPlayer(lastFoundCell.TypeOfCheckerOnMe);
 
             matrixOfCells[x, y].HandleCheckerOnMe(transitionCheckerBuffer, true, true);
-            Debug.Log("MAJOR KILLED SOMEONE");
+            if (!IsThereMoreMovesAvaiableForMajorChecker(x, y)) {
+                legalMoveDone.Invoke();
+            }
         }
     }
 
@@ -254,7 +254,19 @@ public class GameController : MonoBehaviour
             gameIsOver = true;
         } else {
             currentPlayer = players[players.IndexOf(currentPlayer) == 3 ? 0 : players.IndexOf(currentPlayer) + 1];
+            if (currentPlayer.CheckersAmount <= 0) {
+                ChangeCurrentPlayer();
+            }
             notification.ShowNotification(currentPlayer.CheckersTypeColor.ToString() + ", your turn");
+        }
+    }
+
+    private void ReduceCheckerFromPlayer(CheckerType checkerThatKilled) {
+        foreach(CheckersPlayer player in players) {
+            if (player.CheckersTypeColor == checkerThatKilled) {
+                player.ReduceChecker();
+                return;
+            }
         }
     }
 
@@ -262,8 +274,7 @@ public class GameController : MonoBehaviour
         if ((newX - 2) is >= 0 and <= 10) {
             if ((newY - 2) is >= 0 and <= 10) {
                 if (!matrixOfCells[newX - 2, newY - 2].HaveCheckerOn) {
-                    if (matrixOfCells[newX - 1, newY - 1].HaveCheckerOn && matrixOfCells[newX - 1, newY - 1].TypeOfCheckerOnMe != CurrentCheckersTypeTurn) {
-                        Debug.Log("top left is way");
+                    if (matrixOfCells[newX - 1, newY - 1].HaveCheckerOn && matrixOfCells[newX - 1, newY - 1].TypeOfCheckerOnMe != CurrentCheckersTypeTurn) { 
                         return true;
                     }
                 }
@@ -271,8 +282,7 @@ public class GameController : MonoBehaviour
 
             if ((newY + 2) is >= 0 and <= 10) {
                 if (!matrixOfCells[newX - 2, newY + 2].HaveCheckerOn) {
-                    if (matrixOfCells[newX - 1, newY + 1].HaveCheckerOn && matrixOfCells[newX - 1, newY + 1].TypeOfCheckerOnMe != CurrentCheckersTypeTurn) {
-                        Debug.Log("top right is way");
+                    if (matrixOfCells[newX - 1, newY + 1].HaveCheckerOn && matrixOfCells[newX - 1, newY + 1].TypeOfCheckerOnMe != CurrentCheckersTypeTurn) { 
                         return true;
                     }
                 }
@@ -283,7 +293,6 @@ public class GameController : MonoBehaviour
             if ((newY - 2) is >= 0 and <= 10) {
                 if (!matrixOfCells[newX + 2, newY - 2].HaveCheckerOn) {
                     if (matrixOfCells[newX + 1, newY - 1].HaveCheckerOn && matrixOfCells[newX + 1, newY - 1].TypeOfCheckerOnMe != CurrentCheckersTypeTurn) {
-                        Debug.Log("bot left is way");
                         return true;
                     }
                 }
@@ -292,7 +301,6 @@ public class GameController : MonoBehaviour
             if ((newY + 2) is >= 0 and <= 10) {
                 if (!matrixOfCells[newX + 2, newY + 2].HaveCheckerOn) {
                     if (matrixOfCells[newX + 1, newY + 1].HaveCheckerOn && matrixOfCells[newX + 1, newY + 1].TypeOfCheckerOnMe != CurrentCheckersTypeTurn) {
-                        Debug.Log("bot right is way");
                         return true;
                     }
                 }
@@ -301,5 +309,75 @@ public class GameController : MonoBehaviour
 
         return false;
     }
+
+    private bool IsThereMoreMovesAvaiableForMajorChecker(int newX, int newY) {
+        if (newX > 1) { // TOP DIRECTIONS
+            for(int i = newX - 1, columnMargin = 1; i > 0; i--, columnMargin++) {
+                
+                // TOP LEFT WAY
+                if (newY - columnMargin > 0) {
+                    if (matrixOfCells[i, newY - columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
+                        Debug.Log("SOME ON MY TOP LEFT WAY");
+                        if (matrixOfCells[i, newY - columnMargin].IsEnemyForCurrent(CurrentCheckersTypeTurn)) { // Check is it enemy checker?
+                            Debug.Log("IT'S ENEMY!TL");
+                            if (!matrixOfCells[i - 1, newY - columnMargin - 1].HaveCheckerOn) { // Is there empty cell behind enemy ?
+                                Debug.Log("I CAN KILL HIM!TL");
+                                return true;
+                            }
+                        }
+                    }
+                } 
+
+                // TOP RIGHT WAY
+                if (newY + columnMargin < matrixSize - 2) {
+                    if (matrixOfCells[i, newY + columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
+                        Debug.Log("SOME ON MY TOP RIGHT WAY");
+                        if (matrixOfCells[i, newY + columnMargin].IsEnemyForCurrent(CurrentCheckersTypeTurn)) { // Check is it enemy checker?
+                            Debug.Log("IT'S ENEMY!TR");
+                            if (!matrixOfCells[i - 1, newY + columnMargin + 1].HaveCheckerOn) { // Is there empty cell behind enemy ?
+                                Debug.Log("I CAN KILL HIM!TR");
+                                return true;
+                            }
+                        }
+                    }
+                }
+            } 
+        }
+
+        if (newX < matrixSize - 2) { // BOT DIRECTIONS
+            for(int i = newX + 1, columnMargin = 1; i < matrixSize - 1; i++, columnMargin++) {
+                // BOT LEFT WAY
+                if (newY - columnMargin > 0) {
+                    if (matrixOfCells[i, newY - columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
+                        Debug.Log("SOME ON MY BOT LEFT WAY");
+                        if (matrixOfCells[i, newY - columnMargin].IsEnemyForCurrent(CurrentCheckersTypeTurn)) { // Check is it enemy checker?
+                            Debug.Log("IT'S ENEMY!BL");
+                            if (!matrixOfCells[i + 1, newY - columnMargin - 1].HaveCheckerOn) { // Is there empty cell behind enemy ?
+                                Debug.Log("I CAN KILL HIM!BL");
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+                // BOT RIGHT WAY
+                if (newY + columnMargin < matrixSize - 2) {
+                    if (matrixOfCells[i, newY + columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
+                        Debug.Log("SOME ON MY BOT RIGHT WAY");
+                        if (matrixOfCells[i, newY + columnMargin].IsEnemyForCurrent(CurrentCheckersTypeTurn)) { // Check is it enemy checker?
+                            Debug.Log("IT'S ENEMY!BR");
+                            if (!matrixOfCells[i + 1, newY + columnMargin + 1].HaveCheckerOn) { // Is there empty cell behind enemy ?
+                                Debug.Log("I CAN KILL HIM!BR");
+                                return true;
+                            }
+                        }
+                    }
+                }
+            } 
+        }
+
+        return false;
+    }
+
     #endregion
 }

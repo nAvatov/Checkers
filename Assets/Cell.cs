@@ -119,6 +119,9 @@ public class Cell : MonoBehaviour, IPointerClickHandler
         selectionPaddingObj.SetActive(isSelected);
     }
 
+    public bool IsEnemyForCurrent(CheckerType currentPlayerCheckerType) {
+        return haveCheckerOn && (currentPlayerCheckerType != typeOfCheckerOnMe);
+    }
     
 
     #endregion
