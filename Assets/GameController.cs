@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public enum CheckerType {
-    red,
-    green,
-    blue,
-    pink
+    bot,
+    left,
+    top,
+    right
 }
 
 public class GameController : MonoBehaviour
@@ -45,19 +45,13 @@ public class GameController : MonoBehaviour
     private void Awake() {
         rTransform = GetComponent<RectTransform>();
         matrixOfCells = new Cell[matrixSize,matrixSize];
-        players = new List<CheckersPlayer> { 
-            new CheckersPlayer(CheckerType.blue, singleColorCheckersAmount),   
-            new CheckersPlayer(CheckerType.pink, singleColorCheckersAmount),
-            new CheckersPlayer(CheckerType.red, singleColorCheckersAmount),
-            new CheckersPlayer(CheckerType.green, singleColorCheckersAmount)
-        };
         legalMoveDone = ChangeCurrentPlayer;
     }
 
     private void Start() {
         InitializePlayfieldWithCells();
         PlaceCheckersOnBoard();
-        currentPlayer = players[new System.Random().Next(0, 3)];
+        currentPlayer = players[new System.Random().Next(0, players.Count - 1)];
         notification.ShowNotification(currentPlayer.CheckersTypeColor.ToString() + ", you first");
     }
     
@@ -77,25 +71,26 @@ public class GameController : MonoBehaviour
 
         // CHECKER
         if (!chosenBefore.HaveMajorCheckerOn) {
-            HandleAttack(chosenBefore, i, j);
+            // Conditions as paramether in Handle.. functions determines move avaiability direction
             switch (chosenBefore.TypeOfCheckerOnMe) {
-                case CheckerType.red : { 
+                case CheckerType.bot : { 
                     HandleVerticalMovement(chosenBefore, i, j, i < chosenX);
                     break;
                 }
-                case CheckerType.green: { 
+                case CheckerType.left: { 
                     HandleHorizontalMovement(chosenBefore, i, j, j > chosenY);
                     break;
                 }
-                case CheckerType.blue: {
+                case CheckerType.top: {
                     HandleVerticalMovement(chosenBefore, i, j, i > chosenX);
                     break;
                 }
-                case CheckerType.pink: {
+                case CheckerType.right: {
                     HandleHorizontalMovement(chosenBefore, i, j, j < chosenY);
                     break;
                 }
             }
+            HandleAttack(chosenBefore, i, j);
         }
         // MAJOR CHECKER
         else {
@@ -123,12 +118,19 @@ public class GameController : MonoBehaviour
     private void PlaceCheckersOnBoard() {
         for(int i = 0; i < 3; i++ ) {
             for (int j = i + 1; j < matrixSize - i; j += 2) {
-                matrixOfCells[i, j].HandleCheckerOnMe(CheckerType.blue);
-                matrixOfCells[j, i].HandleCheckerOnMe(CheckerType.green);
-                matrixOfCells[matrixSize - 1 - i, j].HandleCheckerOnMe(CheckerType.red);
-                matrixOfCells[j, matrixSize - 1 - i].HandleCheckerOnMe(CheckerType.pink);
+                matrixOfCells[i, j].HandleCheckerOnMe(CheckerType.top);
+                matrixOfCells[j, i].HandleCheckerOnMe(CheckerType.left);
+                matrixOfCells[matrixSize - 1 - i, j].HandleCheckerOnMe(CheckerType.bot);
+                matrixOfCells[j, matrixSize - 1 - i].HandleCheckerOnMe(CheckerType.right);
             }
         }
+
+        players = new List<CheckersPlayer> { 
+            new CheckersPlayer(CheckerType.top, singleColorCheckersAmount),   
+            new CheckersPlayer(CheckerType.right, singleColorCheckersAmount),
+            new CheckersPlayer(CheckerType.bot, singleColorCheckersAmount),
+            new CheckersPlayer(CheckerType.left, singleColorCheckersAmount)
+        };
     }
 
 
@@ -139,17 +141,17 @@ public class GameController : MonoBehaviour
     /// <param name="targetX"></param>
     /// <param name="targetY"></param>
     private void HandleVerticalMovement(Cell previousCell, int targetX, int targetY, bool vDirConstraint) {
-        if (vDirConstraint && Mathf.Abs(targetY - chosenY) == 1) {
+        if (vDirConstraint && CheckerMoveConditionSatisfied(previousCell.HaveMajorCheckerOn, targetX, targetY)) {
             if (previousCell.HaveCheckerOn && !matrixOfCells[targetX, targetY].HaveCheckerOn) { // Check if chosen cell have checker on and new cell doesn't have yet
-                ExchangeCells(previousCell, targetX, targetY, targetX == 0 || targetX == matrixSize - 1);
+                ExchangeCells(previousCell, targetX, targetY, MajorityConditionPredicate(previousCell.TypeOfCheckerOnMe, targetX, targetY));
             }
         }
     }
 
     private void HandleHorizontalMovement(Cell previousCell, int targetX, int targetY, bool hDirConstraint) {
-        if (hDirConstraint && Mathf.Abs(targetY - chosenY) == 1) {
+        if (hDirConstraint && CheckerMoveConditionSatisfied(previousCell.HaveMajorCheckerOn, targetX, targetY)) {
             if (previousCell.HaveCheckerOn && !matrixOfCells[targetX, targetY].HaveCheckerOn) { // Check if chosen cell have checker on and new cell doesn't have yet
-                ExchangeCells(previousCell, targetX, targetY, targetY == 0 || targetY == matrixSize - 1);
+                ExchangeCells(previousCell, targetX, targetY, MajorityConditionPredicate(previousCell.TypeOfCheckerOnMe, targetX, targetY));
             }
         }
     }
@@ -161,24 +163,29 @@ public class GameController : MonoBehaviour
         if (victimX != -1 && victimY != -1) { 
             matrixOfCells[victimX, victimY].HandleCheckerOnMe(matrixOfCells[victimX, victimY].TypeOfCheckerOnMe, false, false); // Just killed one checker!
             ReduceCheckerFromPlayer(matrixOfCells[victimX, victimY].TypeOfCheckerOnMe);
+            PlaceCheckerOnCell(transitionCheckerBuffer, targetX, targetY, majorityCondition, false);
 
             if (!IsThereSomeMoreMovesAvaiable(targetX, targetY)) { // If there no more any legal moves - change player. Otherwise - give player a chance.
                 legalMoveDone.Invoke();
             }
+        } else {
+            PlaceCheckerOnCell(transitionCheckerBuffer, targetX, targetY, majorityCondition, true);
         }
+    }
 
+    private void PlaceCheckerOnCell(CheckerType transitionChecker, int targetX, int targetY, bool majorityCondition, bool noVictim) {
         if (majorityCondition) {
             matrixOfCells[targetX,targetY].HaveMajorCheckerOn = true; 
-            matrixOfCells[targetX,targetY].HandleCheckerOnMe(transitionCheckerBuffer, true, true); // Place checker on new position (2nd click)
-            if (!IsThereMoreMovesAvaiableForMajorChecker(targetX,targetY)) legalMoveDone.Invoke();
+            matrixOfCells[targetX,targetY].HandleCheckerOnMe(transitionChecker, true, true); // Place checker on new position (2nd click)
+            if (!IsThereMoreMovesAvaiableForMajorChecker(targetX,targetY) && noVictim) legalMoveDone.Invoke();
         } else {
-            matrixOfCells[targetX,targetY].HandleCheckerOnMe(transitionCheckerBuffer); // Place checker on new position (2nd click)
-            if (victimX == -1 && victimY == -1) legalMoveDone.Invoke();
+            matrixOfCells[targetX,targetY].HandleCheckerOnMe(transitionChecker); // Place checker on new position (2nd click)
+            if (noVictim) legalMoveDone.Invoke();
         }
     }
 
     private void HandleAttack(Cell previousCell, int targetX, int targetY) {
-        if (Mathf.Abs(targetY - chosenY) == 2) {
+        if (CheckerAttackConditionSatisfied(previousCell.TypeOfCheckerOnMe, targetX, targetY)) {
             if (previousCell.HaveCheckerOn && !matrixOfCells[targetX, targetY].HaveCheckerOn) { // Check if chosen cell have checker on and new cell doesn't have yet
                 // Getting info about victim
                 int x,y;
@@ -186,22 +193,32 @@ public class GameController : MonoBehaviour
                 y = targetY > chosenY ? targetY - 1 : targetY + 1;
                 // Check if there any checker between chosen pos and new pos and don't hit your troops
                 if (matrixOfCells[x, y].HaveCheckerOn && matrixOfCells[x, y].TypeOfCheckerOnMe != previousCell.TypeOfCheckerOnMe) {
-                    ExchangeCells(previousCell, targetX, targetY, CheckOrientationPredicate(previousCell.TypeOfCheckerOnMe, targetX, targetY), x, y); // TODO: Make majority handle after killing enemy checker
+                    ExchangeCells(previousCell, targetX, targetY, MajorityConditionPredicate(previousCell.TypeOfCheckerOnMe, targetX, targetY), x, y);
                 }
             }
         }
     }
 
-    private bool CheckOrientationPredicate(CheckerType checkerType, int targetX, int targetY) {
-        if (checkerType == CheckerType.red || checkerType == CheckerType.blue) { 
-            return targetX == 0 || targetX == matrixSize - 1;
+    private bool MajorityConditionPredicate(CheckerType checkerType, int targetX, int targetY) {
+        switch(checkerType) {
+            case CheckerType.bot:
+                return targetX == 0;
+            case CheckerType.top: 
+                return targetX == matrixSize - 1;
+            case CheckerType.left:
+                return targetY == matrixSize - 1;
+            case CheckerType.right: 
+                return targetY == 0;
+            default: {
+                Debug.LogError("Unsupported checker type");
+                return false;
+            }
         }
-        return targetY == 0 || targetY == matrixSize - 1;
     }
 
     private void HandleMajorCheckerMoves(Cell previousCell, int targetX, int targetY) {
         if (previousCell.HaveMajorCheckerOn) {
-            if (previousCell.HaveCheckerOn && !matrixOfCells[targetX, targetY].HaveCheckerOn) { // Check if chosen cell have checker on and new cell doesn't have yet
+            if (previousCell.HaveCheckerOn && !matrixOfCells[targetX, targetY].HaveCheckerOn && CheckerMoveConditionSatisfied(previousCell.HaveMajorCheckerOn, targetX, targetY)) { // Check if chosen cell have checker on and new cell doesn't have yet
                 CheckMajorCheckerMoveType(previousCell, targetX, targetY);
             }
         }
@@ -248,18 +265,28 @@ public class GameController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// TODO: Разделить на две функции
+    /// </summary>
     private void ChangeCurrentPlayer() {
+        Debug.Log("PLayers Count: " + players.Count);
         if (players.Count == 1) {
+            Debug.Log("game is over");
             notification.ShowNotification(players[0].CheckersTypeColor.ToString() + " player won!");
             gameIsOver = true;
         } else {
-            currentPlayer = players[players.IndexOf(currentPlayer) == 3 ? 0 : players.IndexOf(currentPlayer) + 1];
+            currentPlayer = players[players.IndexOf(currentPlayer) == players.Count - 1 ? 0 : players.IndexOf(currentPlayer) + 1];
             if (currentPlayer.CheckersAmount <= 0) {
+                players.Remove(currentPlayer);
+                notification.ShowNotification(currentPlayer.CheckersTypeColor.ToString()+ " is eliminated.");
                 ChangeCurrentPlayer();
+                return;
             }
             notification.ShowNotification(currentPlayer.CheckersTypeColor.ToString() + ", your turn");
         }
     }
+
+
 
     private void ReduceCheckerFromPlayer(CheckerType checkerThatKilled) {
         foreach(CheckersPlayer player in players) {
@@ -329,7 +356,7 @@ public class GameController : MonoBehaviour
                 } 
 
                 // TOP RIGHT WAY
-                if (newY + columnMargin < matrixSize - 2) {
+                if (newY + columnMargin <= matrixSize - 2) {
                     if (matrixOfCells[i, newY + columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
                         Debug.Log("SOME ON MY TOP RIGHT WAY");
                         if (matrixOfCells[i, newY + columnMargin].IsEnemyForCurrent(CurrentCheckersTypeTurn)) { // Check is it enemy checker?
@@ -361,7 +388,7 @@ public class GameController : MonoBehaviour
                 }
 
                 // BOT RIGHT WAY
-                if (newY + columnMargin < matrixSize - 2) {
+                if (newY + columnMargin <= matrixSize - 2) {
                     if (matrixOfCells[i, newY + columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
                         Debug.Log("SOME ON MY BOT RIGHT WAY");
                         if (matrixOfCells[i, newY + columnMargin].IsEnemyForCurrent(CurrentCheckersTypeTurn)) { // Check is it enemy checker?
@@ -376,6 +403,40 @@ public class GameController : MonoBehaviour
             } 
         }
 
+        return false;
+    }
+
+    /// <summary>
+    /// Diagonal movement condition
+    /// </summary>
+    /// <param name="targetX"></param>
+    /// <param name="targetY"></param>
+    /// <returns></returns>
+    private bool CheckerMoveConditionSatisfied(bool isMajorChecker, int targetX, int targetY) {
+        if (!isMajorChecker) 
+            return 
+                (targetX != chosenX && targetY != chosenY) && 
+                (Mathf.Abs(targetX - chosenX) == 1 && Mathf.Abs(targetY - chosenY) == 1);
+        else 
+            return 
+                (targetX != chosenX && targetY != chosenY) && 
+                (Mathf.Abs(targetX - chosenX) == Mathf.Abs(targetY - chosenY));
+    }
+
+    private bool CheckerAttackConditionSatisfied(CheckerType attackingCheckerType, int targetX, int targetY) {
+        if (attackingCheckerType is CheckerType.bot or CheckerType.top) {
+            return 
+                (Mathf.Abs(targetX - chosenX) == 2) &&
+                (targetX != chosenX && targetY != chosenY);
+        }
+
+        if (attackingCheckerType is CheckerType.right or CheckerType.left) { 
+            return 
+                (Mathf.Abs(targetY - chosenY) == 2) &&
+                (targetX != chosenX && targetY != chosenY);
+        }
+
+        Debug.LogError("Checker attack condition is unsatisfied. Something wrong with attackingCheckerType.");
         return false;
     }
 

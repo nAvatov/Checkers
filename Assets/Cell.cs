@@ -11,10 +11,10 @@ public class Cell : MonoBehaviour, IPointerClickHandler
     [SerializeField] Color activeColor;
     [SerializeField] Color inactiveColor;
     [Header("Checkers")]
-    [SerializeField] GameObject greenCheker;
-    [SerializeField] GameObject redChecker;
-    [SerializeField] GameObject pinkChecker;
-    [SerializeField] GameObject blueChekcer;
+    [SerializeField] GameObject leftChecker;
+    [SerializeField] GameObject botChecker;
+    [SerializeField] GameObject rightChecker;
+    [SerializeField] GameObject topChecker;
     [SerializeField] GameObject majorityState;
 
 
@@ -82,20 +82,20 @@ public class Cell : MonoBehaviour, IPointerClickHandler
 
     public void HandleCheckerOnMe(CheckerType checker, bool isPlacing = true, bool isMajorChecker = false) {
         switch(checker) {
-            case CheckerType.red: {
-                redChecker.SetActive(isPlacing);
+            case CheckerType.bot: {
+                botChecker.SetActive(isPlacing);
                 break;
             }
-            case CheckerType.green: {
-                greenCheker.SetActive(isPlacing);
+            case CheckerType.left: {
+                leftChecker.SetActive(isPlacing);
                 break;
             }
-            case CheckerType.blue: {
-                blueChekcer.SetActive(isPlacing);
+            case CheckerType.top: {
+                topChecker.SetActive(isPlacing);
                 break;
             }
-            case CheckerType.pink: {
-                pinkChecker.SetActive(isPlacing);
+            case CheckerType.right: {
+                rightChecker.SetActive(isPlacing);
                 break;
             }
         }
@@ -110,7 +110,7 @@ public class Cell : MonoBehaviour, IPointerClickHandler
     }
 
     public void RemoveAnyCheckerFromMe() {
-        foreach(GameObject checker in new List<GameObject> { redChecker, blueChekcer, greenCheker, pinkChecker}) {
+        foreach(GameObject checker in new List<GameObject> { botChecker, topChecker, leftChecker, rightChecker}) {
             checker.SetActive(false);
         }
     }

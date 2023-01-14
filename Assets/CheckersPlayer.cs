@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CheckersPlayer
 {
-    private CheckerType checkersTypeColor;
+    private CheckerType myCheckerColor;
     private int checkersAmount;
 
     public int CheckersAmount { 
@@ -15,12 +15,12 @@ public class CheckersPlayer
 
     public CheckerType CheckersTypeColor { 
         get {
-            return checkersTypeColor;
+            return myCheckerColor;
         }
     }
 
     public CheckersPlayer(CheckerType _checkersTypeColor, int _checkersAmount) {
-        checkersTypeColor = _checkersTypeColor;
+        myCheckerColor = _checkersTypeColor;
         checkersAmount = _checkersAmount;
     }
 
