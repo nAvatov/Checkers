@@ -3,6 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+public struct Position {
+    public int x;
+    public int y;
+
+    public Position (int _x, int _y) {
+        x = _x;
+        y = _y;
+    }
+}
+
 public class Cell : MonoBehaviour, IPointerClickHandler
 {
     [Header("Appearence on board")]
@@ -17,54 +27,54 @@ public class Cell : MonoBehaviour, IPointerClickHandler
     [SerializeField] GameObject topChecker;
     [SerializeField] GameObject majorityState;
 
-
-
-    private GameController gameController;
-    private int coordX, coordY;
-    private bool haveCheckerOn;
-    private bool haveMajorCheckerOn;
-    private bool active;
-    private CheckerType typeOfCheckerOnMe;
+    private Position _position;
+    private bool _hasCheckerOn;
+    private bool _hasMajorCheckerOn;
+    private bool _isActive;
+    private CheckerType _typeOfCheckerOn;
 
     public bool HaveCheckerOn {
         get {
-            return haveCheckerOn;
+            return _hasCheckerOn;
         }
 
         set {
-            haveCheckerOn = value;
+            _hasCheckerOn = value;
         }
     }
 
     public bool HaveMajorCheckerOn { 
         get {
-            return haveMajorCheckerOn;
+            return _hasMajorCheckerOn;
         }
 
         set {
-            haveMajorCheckerOn = value;
+            _hasMajorCheckerOn = value;
         }
     }
 
     public bool IsActiveCell {
         get {
-            return active;
+            return _isActive;
         }
     }
 
-    public CheckerType TypeOfCheckerOnMe {
+    public CheckerType TypeOfCheckerOn {
         get {
-            return typeOfCheckerOnMe;
+            return _typeOfCheckerOn;
         }
     }
 
     #region UnityMethods
 
     public void OnPointerClick(PointerEventData pointerEventData) {
-        if (active && !gameController.GameIsOver) {
-            if ((haveCheckerOn && typeOfCheckerOnMe == gameController.CurrentCheckersTypeTurn) || !haveCheckerOn)
+        if (_isActive && !GameController.IsGameOver) {
+            Debug.Log("Has checker on : " + _hasCheckerOn);
+            Debug.Log("Checker type turn : " + GameController.CurrentCheckersTypeTurn);
+
+            if ((_hasCheckerOn && _typeOfCheckerOn == GameController.CurrentCheckersTypeTurn) || !_hasCheckerOn)
             {
-                gameController.SetChosenChecker(coordX, coordY);
+                MovementController.SetChosenChecker(_position);
             }
         }
     }
@@ -73,11 +83,10 @@ public class Cell : MonoBehaviour, IPointerClickHandler
 
     #region Public Methods
 
-    public void InitializeCell(GameController gc, bool isActiveCell, int i, int j) {
+    public void InitializeCell(bool isActiveCell, Position newPosition) {
        image.color = isActiveCell ? activeColor : inactiveColor;
-       active = isActiveCell;
-       coordX = i; coordY = j;
-       gameController = gc;
+       _isActive = isActiveCell;
+       _position = newPosition;
     }
 
     public void HandleCheckerOnMe(CheckerType checker, bool isPlacing = true, bool isMajorChecker = false) {
@@ -100,12 +109,12 @@ public class Cell : MonoBehaviour, IPointerClickHandler
             }
         }
 
-        haveCheckerOn = isPlacing;
-        haveMajorCheckerOn = isMajorChecker;
+        _hasCheckerOn = isPlacing;
+        _hasMajorCheckerOn = isMajorChecker;
         majorityState.SetActive(isMajorChecker);
 
         if (isPlacing) {
-            typeOfCheckerOnMe = checker;
+            _typeOfCheckerOn = checker;
         }
     }
 
@@ -120,7 +129,7 @@ public class Cell : MonoBehaviour, IPointerClickHandler
     }
 
     public bool IsEnemyForCurrent(CheckerType currentPlayerCheckerType) {
-        return haveCheckerOn && (currentPlayerCheckerType != typeOfCheckerOnMe);
+        return _hasCheckerOn && (currentPlayerCheckerType != _typeOfCheckerOn);
     }
     
 

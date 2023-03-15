@@ -12197,7 +12197,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1945784262}
   - component: {fileID: 1945784264}
-  - component: {fileID: 1945784263}
+  - component: {fileID: 1945784265}
+  - component: {fileID: 1945784266}
   m_Layer: 5
   m_Name: PlayField
   m_TagString: Untagged
@@ -12346,19 +12347,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 550, y: 550}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1945784263
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1945784261}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa9e23a33dd9ed4449ce70f4de9456ab, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  notification: {fileID: 1186000878}
 --- !u!114 &1945784264
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12383,6 +12371,31 @@ MonoBehaviour:
   m_Spacing: {x: 0, y: 0}
   m_Constraint: 0
   m_ConstraintCount: 2
+--- !u!114 &1945784265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945784261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41c71afffb1f73046939621ffada5eb0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1945784266
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1945784261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 127e626702bda0e4db9db4dcc7fd3a36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _notificationManager: {fileID: 1186000878}
 --- !u!1001 &1946106631
 PrefabInstance:
   m_ObjectHideFlags: 0
