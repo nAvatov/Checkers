@@ -18,6 +18,11 @@ public static class MovementController
         Cell chosenBefore = Board.MatrixOfCells[_chosenPosition.x, _chosenPosition.y];
         chosenBefore.HandleCellSelection(false);
 
+        if (!chosenBefore.HaveCheckerOn) {
+            _chosenPosition.x = -1; _chosenPosition.y = -1;
+            return;
+        }
+
         // CHECKER
         if (!chosenBefore.HaveMajorCheckerOn) {
             switch (chosenBefore.TypeOfCheckerOn) {
@@ -55,7 +60,7 @@ public static class MovementController
     private static void MoveChecker(Cell previousCell, Position targetPosition, bool legalDirection) {
         if (legalDirection && PredicatedRules.CheckerMoveCondition(previousCell.HaveMajorCheckerOn, targetPosition, _chosenPosition)) {
             if (!Board.MatrixOfCells[targetPosition.x, targetPosition.y].HaveCheckerOn) {
-                ExchangeCells(previousCell, targetPosition, PredicatedRules.MajorityConditionPredicate(previousCell.TypeOfCheckerOn, targetPosition), new Position(-1, -1));
+                ExchangeCells(previousCell, targetPosition, PredicatedRules.MajorityConditionPredicate(previousCell, targetPosition), new Position(-1, -1));
             }
         }
     }
@@ -67,12 +72,13 @@ public static class MovementController
         if (victimPosition.x != -1 && victimPosition.y != -1) { 
             // Checker is eliminated
             Board.MatrixOfCells[victimPosition.x, victimPosition.y].HandleCheckerOnMe(Board.MatrixOfCells[victimPosition.x, victimPosition.y].TypeOfCheckerOn, false, false);
-            GameController.ReduceCheckerFromPlayer(Board.MatrixOfCells[victimPosition.x, victimPosition.y].TypeOfCheckerOn);
+            PlayersController.ReduceCheckerFromPlayer(Board.MatrixOfCells[victimPosition.x, victimPosition.y].TypeOfCheckerOn);
             PlaceCheckerOnCell(transitionCheckerBuffer, targetPosition, isBecomingMajor, false);
 
-            if (!PredicatedRules.CheckerMovesAvaiable(targetPosition)) {
+            if (!PredicatedRules.CheckerMovesAvaiable(targetPosition) && !isBecomingMajor || !PredicatedRules.MajorMovesAvaiable(targetPosition) && isBecomingMajor) {
                 _legalMoveDone.Invoke();
             }
+
         } else {
             PlaceCheckerOnCell(transitionCheckerBuffer, targetPosition, isBecomingMajor, true);
         }
@@ -93,14 +99,14 @@ public static class MovementController
 
     private static void HandleAttack(Cell previousCell, Position targetPosition) {
         if (PredicatedRules.CheckerAttackCondition(previousCell.TypeOfCheckerOn, targetPosition, _chosenPosition)) {
-            if (previousCell.HaveCheckerOn && !Board.MatrixOfCells[targetPosition.x, targetPosition.y].HaveCheckerOn) { // Check if chosen cell have checker on and new cell doesn't have yet
+            if (!Board.MatrixOfCells[targetPosition.x, targetPosition.y].HaveCheckerOn) { // Check if chosen cell have checker on and new cell doesn't have yet
                 // Getting info about victim
                 Position victimPosition;
                 victimPosition.x = targetPosition.x > _chosenPosition.x ? targetPosition.x - 1 : targetPosition.x + 1;
                 victimPosition.y = targetPosition.y > _chosenPosition.y ? targetPosition.y - 1 : targetPosition.y + 1;
                 // Check if there any checker between chosen pos and new pos and don't hit your troops
                 if (Board.MatrixOfCells[victimPosition.x, victimPosition.y].HaveCheckerOn && Board.MatrixOfCells[victimPosition.x, victimPosition.y].TypeOfCheckerOn != previousCell.TypeOfCheckerOn) {
-                    ExchangeCells(previousCell, targetPosition, PredicatedRules.MajorityConditionPredicate(previousCell.TypeOfCheckerOn, targetPosition), victimPosition);
+                    ExchangeCells(previousCell, targetPosition, PredicatedRules.MajorityConditionPredicate(previousCell, targetPosition), victimPosition);
                 }
             }
         }
@@ -131,7 +137,7 @@ public static class MovementController
             
             // Killing the victim. Be sure that u killed any possible type of enemy checker (major also killable)
             victimCheckerCell.HandleCheckerOnMe(victimCheckerCell.TypeOfCheckerOn, false, false);
-            GameController.ReduceCheckerFromPlayer(victimCheckerCell.TypeOfCheckerOn);
+            PlayersController.ReduceCheckerFromPlayer(victimCheckerCell.TypeOfCheckerOn);
 
             Board.MatrixOfCells[targetPosition.x, targetPosition.y].HandleCheckerOnMe(transitionCheckerBuffer, true, true);
             if (!PredicatedRules.MajorMovesAvaiable(targetPosition)) {

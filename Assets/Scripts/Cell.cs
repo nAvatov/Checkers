@@ -68,12 +68,8 @@ public class Cell : MonoBehaviour, IPointerClickHandler
     #region UnityMethods
 
     public void OnPointerClick(PointerEventData pointerEventData) {
-        if (_isActive && !GameController.IsGameOver) {
-            Debug.Log("Has checker on : " + _hasCheckerOn);
-            Debug.Log("Checker type turn : " + GameController.CurrentCheckersTypeTurn);
-
-            if ((_hasCheckerOn && _typeOfCheckerOn == GameController.CurrentCheckersTypeTurn) || !_hasCheckerOn)
-            {
+        if (_isActive && !PlayersController.IsGameOver) {
+            if ((_hasCheckerOn && _typeOfCheckerOn == PlayersController.CurrentCheckersTypeTurn) || !_hasCheckerOn) {
                 MovementController.SetChosenChecker(_position);
             }
         }
@@ -116,6 +112,11 @@ public class Cell : MonoBehaviour, IPointerClickHandler
         if (isPlacing) {
             _typeOfCheckerOn = checker;
         }
+    }
+
+    public void AddCheckerToCell(CheckerType checkerType) {
+        HandleCheckerOnMe(checkerType);
+        PlayersController.AddCheckerToPlayer(checkerType);
     }
 
     public void RemoveAnyCheckerFromMe() {

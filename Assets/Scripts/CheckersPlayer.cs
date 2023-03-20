@@ -8,12 +8,16 @@ public class CheckersPlayer
     private int checkersAmount;
 
     public int CheckersAmount { 
+        set {
+            checkersAmount = value;
+        }
+
         get { 
             return checkersAmount;
         }
     }
 
-    public CheckerType CheckersTypeColor { 
+    public CheckerType CheckerType { 
         get {
             return myCheckerColor;
         }

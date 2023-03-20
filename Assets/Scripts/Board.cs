@@ -11,6 +11,8 @@ public enum CheckerType {
 
 public class Board : MonoBehaviour
 {   
+    public static string[] checkersType;
+    [SerializeField] private Notification _notificationManager;
     private const int _matrixSize = 11;
     private static Cell[,] _matrixOfCells;
     private RectTransform _rTransform;
@@ -34,7 +36,9 @@ public class Board : MonoBehaviour
 
     private void Start() {
         InitializeCells();
-        PlaceCheckers();
+        // PlaceCheckers();
+        TestPlacing();
+         _notificationManager.ShowNotification(PlayersController.CurrentCheckersTypeTurn.ToString() + ", you first");
     }
 
     private void InitializeCells() {
@@ -51,18 +55,17 @@ public class Board : MonoBehaviour
     private void PlaceCheckers() {
         for(int i = 0; i < 3; i++ ) {
             for (int j = i + 1; j < _matrixSize - i; j += 2) {
-                _matrixOfCells[i, j].HandleCheckerOnMe(CheckerType.top);
-                _matrixOfCells[j, i].HandleCheckerOnMe(CheckerType.left);
-                _matrixOfCells[_matrixSize - 1 - i, j].HandleCheckerOnMe(CheckerType.bot);
-                _matrixOfCells[j, _matrixSize - 1 - i].HandleCheckerOnMe(CheckerType.right);
+                _matrixOfCells[i, j].AddCheckerToCell(CheckerType.top);
+                _matrixOfCells[j, i].AddCheckerToCell(CheckerType.left);
+                _matrixOfCells[_matrixSize - 1 - i, j].AddCheckerToCell(CheckerType.bot);
+                _matrixOfCells[j, _matrixSize - 1 - i].AddCheckerToCell(CheckerType.right);
             }
         }
+    }
 
-        // players = new List<CheckersPlayer> { 
-        //     new CheckersPlayer(CheckerType.top, singleColorCheckersAmount),   
-        //     new CheckersPlayer(CheckerType.right, singleColorCheckersAmount),
-        //     new CheckersPlayer(CheckerType.bot, singleColorCheckersAmount),
-        //     new CheckersPlayer(CheckerType.left, singleColorCheckersAmount)
-        // };
+    private void TestPlacing() {
+         _matrixOfCells[1, 4].AddCheckerToCell(CheckerType.top);
+         _matrixOfCells[2, 5].AddCheckerToCell(CheckerType.bot);
+         _matrixOfCells[3, 6].AddCheckerToCell(CheckerType.top);
     }
 }

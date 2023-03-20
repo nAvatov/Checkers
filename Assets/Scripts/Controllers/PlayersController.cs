@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameController : MonoBehaviour
+public class PlayersController : MonoBehaviour
 {
     [SerializeField] private Notification _notificationManager;
     private static List<CheckersPlayer> _players;
@@ -17,7 +17,7 @@ public class GameController : MonoBehaviour
 
     public static CheckerType CurrentCheckersTypeTurn {
         get {
-            return _currentPlayer.CheckersTypeColor;
+            return _currentPlayer.CheckerType;
         }
     }
 
@@ -28,26 +28,18 @@ public class GameController : MonoBehaviour
     }
 
     private void Awake() {
-        _players = new List<CheckersPlayer> {
-            new CheckersPlayer(CheckerType.bot, 12),
-            new CheckersPlayer(CheckerType.left, 12),
-            new CheckersPlayer(CheckerType.top, 12),
-            new CheckersPlayer(CheckerType.right, 12)
-        };
+        _players = new List<CheckersPlayer>();
     }
     // Start is called before the first frame update
-    void Start()
-    {
+    void Start() {
         MovementController._legalMoveDone = ChangeCurrentPlayer;
-        _currentPlayer = _players[new System.Random().Next(0, _players.Count - 1)];
-        _notificationManager.ShowNotification(_currentPlayer.CheckersTypeColor.ToString() + ", you first");
     }
 
     #region Private Methods
 
     private void ChangeCurrentPlayer() {
         if (_players.Count == 1) {
-            _notificationManager.ShowNotification(_players[0].CheckersTypeColor.ToString() + " player won!");
+            _notificationManager.ShowNotification(_players[0].CheckerType.ToString() + " player won!");
             _isGameOver = true;
         } else {
             _currentPlayer = _players[_players.IndexOf(_currentPlayer) == _players.Count - 1 ? 0 : _players.IndexOf(_currentPlayer) + 1];
@@ -57,7 +49,7 @@ public class GameController : MonoBehaviour
                 return;
             }
             
-            _notificationManager.ShowNotification(_currentPlayer.CheckersTypeColor.ToString() + ", your turn");
+            _notificationManager.ShowNotification(_currentPlayer.CheckerType.ToString() + ", your turn");
         }
     }  
         
@@ -65,16 +57,35 @@ public class GameController : MonoBehaviour
 
     private void EliminatePlayer(CheckersPlayer player) {
         _players.Remove(player);
-        _notificationManager.ShowNotification(player.CheckersTypeColor.ToString()+ " is eliminated.");
+        _notificationManager.ShowNotification(player.CheckerType.ToString()+ " is eliminated.");
         ChangeCurrentPlayer();
     }
 
     public static void ReduceCheckerFromPlayer(CheckerType checkerThatKilled) {
-        foreach(CheckersPlayer player in Players) {
-            if (player.CheckersTypeColor == checkerThatKilled) {
-                player.ReduceChecker();
-                return;
-            }
+        Players.Find((CheckersPlayer player) => player.CheckerType == checkerThatKilled)?.ReduceChecker();
+    }
+
+    public static void AddCheckerToPlayer(CheckerType checkerType) {
+        CheckersPlayer player = CheckPlayerExistance(checkerType);
+        if (player != null) {
+            player.CheckersAmount++;
         }
+    }
+
+    private static CheckersPlayer CheckPlayerExistance(CheckerType addingCheckerType) {
+        CheckersPlayer p = Players.Find((CheckersPlayer player) => player.CheckerType == addingCheckerType);
+
+        if (p == null) {
+            p = new CheckersPlayer(addingCheckerType, 0);
+            Players.Add(p);
+            
+            if (_currentPlayer == null) {
+                _currentPlayer = p;
+            }
+
+            return p;
+        }
+
+        return p;
     }
 }

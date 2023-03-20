@@ -3,21 +3,25 @@ using UnityEngine;
 
 public static class PredicatedRules
 {
-    public static bool MajorityConditionPredicate(CheckerType checkerType, Position targetPosition) {
-        switch(checkerType) {
-            case CheckerType.bot:
-                return targetPosition.x == 0;
-            case CheckerType.top: 
-                return targetPosition.x == Board.MatrixSize - 1;
-            case CheckerType.left:
-                return targetPosition.y == Board.MatrixSize - 1;
-            case CheckerType.right: 
-                return targetPosition.y == 0;
-            default: {
-                Debug.LogError("Unsupported checker type");
-                return false;
+    public static bool MajorityConditionPredicate(Cell chosenCell, Position targetPosition) {
+        if (!chosenCell.HaveMajorCheckerOn) {
+            switch(chosenCell.TypeOfCheckerOn) {
+                case CheckerType.bot:
+                    return targetPosition.x == 0;
+                case CheckerType.top: 
+                    return targetPosition.x == Board.MatrixSize - 1;
+                case CheckerType.left:
+                    return targetPosition.y == Board.MatrixSize - 1;
+                case CheckerType.right: 
+                    return targetPosition.y == 0;
+                default: {
+                    Debug.LogError("Unsupported checker type");
+                    return false;
+                }
             }
         }
+
+        return true;
     }
 
     public static bool CheckerMoveCondition(bool isMajorChecker, Position targetPosition, Position currentPosition) {
@@ -75,7 +79,7 @@ public static class PredicatedRules
         if ((freshPosition.x - 2) is >= 0 and <= 10) {
             if ((freshPosition.y - 2) is >= 0 and <= 10) {
                 if (!Board.MatrixOfCells[freshPosition.x - 2, freshPosition.y - 2].HaveCheckerOn) {
-                    if (Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y - 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y - 1].TypeOfCheckerOn != GameController.CurrentCheckersTypeTurn) { 
+                    if (Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y - 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y - 1].TypeOfCheckerOn != PlayersController.CurrentCheckersTypeTurn) { 
                         return true;
                     }
                 }
@@ -83,7 +87,7 @@ public static class PredicatedRules
 
             if ((freshPosition.y + 2) is >= 0 and <= 10) {
                 if (!Board.MatrixOfCells[freshPosition.x - 2, freshPosition.y + 2].HaveCheckerOn) {
-                    if (Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y + 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y + 1].TypeOfCheckerOn != GameController.CurrentCheckersTypeTurn) { 
+                    if (Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y + 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y + 1].TypeOfCheckerOn != PlayersController.CurrentCheckersTypeTurn) { 
                         return true;
                     }
                 }
@@ -93,7 +97,7 @@ public static class PredicatedRules
         if ((freshPosition.x + 2) is >= 0 and <= 10) {
             if ((freshPosition.y - 2) is >= 0 and <= 10) {
                 if (!Board.MatrixOfCells[freshPosition.x + 2, freshPosition.y - 2].HaveCheckerOn) {
-                    if (Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y - 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y - 1].TypeOfCheckerOn != GameController.CurrentCheckersTypeTurn) {
+                    if (Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y - 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y - 1].TypeOfCheckerOn != PlayersController.CurrentCheckersTypeTurn) {
                         return true;
                     }
                 }
@@ -101,7 +105,7 @@ public static class PredicatedRules
 
             if ((freshPosition.y + 2) is >= 0 and <= 10) {
                 if (!Board.MatrixOfCells[freshPosition.x + 2, freshPosition.y + 2].HaveCheckerOn) {
-                    if (Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y + 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y + 1].TypeOfCheckerOn != GameController.CurrentCheckersTypeTurn) {
+                    if (Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y + 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y + 1].TypeOfCheckerOn != PlayersController.CurrentCheckersTypeTurn) {
                         return true;
                     }
                 }
@@ -119,7 +123,7 @@ public static class PredicatedRules
                 if (freshPosition.y - columnMargin > 0) {
                     if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
                         Debug.Log("SOME ON MY TOP LEFT WAY");
-                        if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].IsEnemyForCurrent(GameController.CurrentCheckersTypeTurn)) { // Check is it enemy checker?
+                        if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) { // Check is it enemy checker?
                             Debug.Log("IT'S ENEMY!TL");
                             if (!Board.MatrixOfCells[i - 1, freshPosition.y - columnMargin - 1].HaveCheckerOn) { // Is there empty cell behind enemy ?
                                 Debug.Log("I CAN KILL HIM!TL");
@@ -133,7 +137,7 @@ public static class PredicatedRules
                 if (freshPosition.y + columnMargin <= Board.MatrixSize - 2) {
                     if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
                         Debug.Log("SOME ON MY TOP RIGHT WAY");
-                        if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].IsEnemyForCurrent(GameController.CurrentCheckersTypeTurn)) { // Check is it enemy checker?
+                        if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) { // Check is it enemy checker?
                             Debug.Log("IT'S ENEMY!TR");
                             if (!Board.MatrixOfCells[i - 1, freshPosition.y + columnMargin + 1].HaveCheckerOn) { // Is there empty cell behind enemy ?
                                 Debug.Log("I CAN KILL HIM!TR");
@@ -151,7 +155,7 @@ public static class PredicatedRules
                 if (freshPosition.y - columnMargin > 0) {
                     if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
                         Debug.Log("SOME ON MY BOT LEFT WAY");
-                        if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].IsEnemyForCurrent(GameController.CurrentCheckersTypeTurn)) { // Check is it enemy checker?
+                        if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) { // Check is it enemy checker?
                             Debug.Log("IT'S ENEMY!BL");
                             if (!Board.MatrixOfCells[i + 1, freshPosition.y - columnMargin - 1].HaveCheckerOn) { // Is there empty cell behind enemy ?
                                 Debug.Log("I CAN KILL HIM!BL");
@@ -165,7 +169,7 @@ public static class PredicatedRules
                 if (freshPosition.y + columnMargin <= Board.MatrixSize - 2) {
                     if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
                         Debug.Log("SOME ON MY BOT RIGHT WAY");
-                        if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].IsEnemyForCurrent(GameController.CurrentCheckersTypeTurn)) { // Check is it enemy checker?
+                        if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) { // Check is it enemy checker?
                             Debug.Log("IT'S ENEMY!BR");
                             if (!Board.MatrixOfCells[i + 1, freshPosition.y + columnMargin + 1].HaveCheckerOn) { // Is there empty cell behind enemy ?
                                 Debug.Log("I CAN KILL HIM!BR");
