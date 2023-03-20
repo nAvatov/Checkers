@@ -2,12 +2,12 @@ using System.Collections.Generic;
 
 public static class MovementController
 {
-    private static Position _chosenPosition = new Position(-1, -1);
+    private static BoardPosition _chosenPosition = new BoardPosition(-1, -1);
     public static System.Action _strokeTransition;
 
     #region Public Methods
         
-    public static void SetChosenChecker(Position targetPosition) { 
+    public static void SetChosenChecker(BoardPosition targetPosition) { 
         // Reselection
         if (_chosenPosition.x == -1 || _chosenPosition.y == -1) { 
             _chosenPosition = targetPosition;
@@ -25,7 +25,8 @@ public static class MovementController
 
         // CHECKER
         if (!chosenBefore.HaveMajorCheckerOn) {
-            if (!PredicatedRules.CheckerMovesAvaiable(_chosenPosition)) {
+            if (!PredicatedRules.IsAttackVariationExist()) {
+                UnityEngine.Debug.Log("Move");
                 switch (chosenBefore.TypeOfCheckerOn) {
                     case CheckerType.bot : { 
                         MoveChecker(chosenBefore, targetPosition, targetPosition.x < _chosenPosition.x);
@@ -45,6 +46,8 @@ public static class MovementController
                     }
                 }
             } else {
+                UnityEngine.Debug.Log("Attack");
+                UnityEngine.Debug.Log(PlayersController.CurrentCheckersTypeTurn);
                 HandleAttack(chosenBefore, targetPosition);
             }
         }
@@ -60,25 +63,26 @@ public static class MovementController
 
 
     #region Private Methods
-    private static void MoveChecker(Cell previousCell, Position targetPosition, bool legalDirection) {
+    private static void MoveChecker(Cell previousCell, BoardPosition targetPosition, bool legalDirection) {
         if (legalDirection && PredicatedRules.CheckerMoveCondition(previousCell.HaveMajorCheckerOn, targetPosition, _chosenPosition)) {
             if (!Board.MatrixOfCells[targetPosition.x, targetPosition.y].HaveCheckerOn) {
-                ExchangeCells(previousCell, targetPosition, PredicatedRules.MajorityConditionPredicate(previousCell, targetPosition), new Position(-1, -1));
+                ExchangeCells(previousCell, targetPosition, PredicatedRules.MajorityConditionPredicate(previousCell, targetPosition), new BoardPosition(-1, -1));
             }
         }
     }
 
-    private static void ExchangeCells(Cell previousCell, Position targetPosition, bool isBecomingMajor, Position victimPosition) {
+    private static void ExchangeCells(Cell previousCell, BoardPosition targetPosition, bool isBecomingMajor, BoardPosition victimPosition) {
         CheckerType transitionCheckerBuffer = previousCell.TypeOfCheckerOn;
         previousCell.HandleCheckerOnMe(transitionCheckerBuffer, false);
 
         if (victimPosition.x != -1 && victimPosition.y != -1) { 
             // Checker is eliminated
-            Board.MatrixOfCells[victimPosition.x, victimPosition.y].HandleCheckerOnMe(Board.MatrixOfCells[victimPosition.x, victimPosition.y].TypeOfCheckerOn, false, false);
             PlayersController.ReduceCheckerFromPlayer(Board.MatrixOfCells[victimPosition.x, victimPosition.y].TypeOfCheckerOn);
+            Board.MatrixOfCells[victimPosition.x, victimPosition.y].HandleCheckerOnMe(Board.MatrixOfCells[victimPosition.x, victimPosition.y].TypeOfCheckerOn, false, false);
             PlaceCheckerOnCell(transitionCheckerBuffer, targetPosition, isBecomingMajor, false);
 
-            if (!PredicatedRules.CheckerMovesAvaiable(targetPosition) && !isBecomingMajor || !PredicatedRules.MajorMovesAvaiable(targetPosition) && isBecomingMajor) {
+            if (!PredicatedRules.IsExtraCheckerAttacksAvaiable(targetPosition) && !isBecomingMajor || !PredicatedRules.IsMajorMovesAvaiable(targetPosition) && isBecomingMajor) {
+                UnityEngine.Debug.Log("No extra attack variants [ExchangeCells func]");
                 _strokeTransition.Invoke();
             }
 
@@ -87,11 +91,11 @@ public static class MovementController
         }
     }
 
-    private static void PlaceCheckerOnCell(CheckerType transitionChecker, Position targetPosition, bool isMajorNow, bool noVictim) {
+    private static void PlaceCheckerOnCell(CheckerType transitionChecker, BoardPosition targetPosition, bool isMajorNow, bool noVictim) {
         if (isMajorNow) {
             Board.MatrixOfCells[targetPosition.x, targetPosition.y].HaveMajorCheckerOn = true; 
             Board.MatrixOfCells[targetPosition.x, targetPosition.y].HandleCheckerOnMe(transitionChecker, true, true); // Place checker on new position (2nd click)
-            if (!PredicatedRules.MajorMovesAvaiable(targetPosition) && noVictim) { 
+            if (!PredicatedRules.IsMajorMovesAvaiable(targetPosition) && noVictim) { 
                 _strokeTransition.Invoke();
             }
         } else {
@@ -100,11 +104,11 @@ public static class MovementController
         }
     }
 
-    private static void HandleAttack(Cell previousCell, Position targetPosition) {
+    private static void HandleAttack(Cell previousCell, BoardPosition targetPosition) {
         if (PredicatedRules.CheckerAttackCondition(previousCell.TypeOfCheckerOn, targetPosition, _chosenPosition)) {
             if (!Board.MatrixOfCells[targetPosition.x, targetPosition.y].HaveCheckerOn) { // Check if chosen cell have checker on and new cell doesn't have yet
                 // Getting info about victim
-                Position victimPosition;
+                BoardPosition victimPosition;
                 victimPosition.x = targetPosition.x > _chosenPosition.x ? targetPosition.x - 1 : targetPosition.x + 1;
                 victimPosition.y = targetPosition.y > _chosenPosition.y ? targetPosition.y - 1 : targetPosition.y + 1;
                 // Check if there any checker between chosen pos and new pos and don't hit your troops
@@ -115,17 +119,17 @@ public static class MovementController
         }
     }
 
-    private static void HandleMajorCheckerMoves(Cell previousCell, Position targetPosition) {
+    private static void HandleMajorCheckerMoves(Cell previousCell, BoardPosition targetPosition) {
         if (!Board.MatrixOfCells[targetPosition.x, targetPosition.y].HaveCheckerOn && PredicatedRules.CheckerMoveCondition(previousCell.HaveMajorCheckerOn, targetPosition, _chosenPosition)) { // Check if chosen cell have checker on and new cell doesn't have yet
             CheckMajorCheckerMoveType(previousCell, targetPosition);
         }
     }
 
-    private static void CheckMajorCheckerMoveType(Cell majorCheckerCell, Position targetPosition) {
+    private static void CheckMajorCheckerMoveType(Cell majorCheckerCell, BoardPosition targetPosition) {
         List<Cell> checkersOnWay = PredicatedRules.MajorMoveAdditionalCondition(_chosenPosition, targetPosition);
         
         if (checkersOnWay != null) {
-            if (checkersOnWay.Count == 0 && !PredicatedRules.MajorMovesAvaiable(_chosenPosition)) {
+            if (checkersOnWay.Count == 0 && !PredicatedRules.IsAttackVariationExist()) {
                 MoveChecker(majorCheckerCell, targetPosition, true);
                 return;
             } 
@@ -136,17 +140,17 @@ public static class MovementController
         }
     }
 
-    private static void MajorAttack(Cell majorCheckerCell, Position targetPosition, Cell victimCheckerCell) {
+    private static void MajorAttack(Cell majorCheckerCell, BoardPosition targetPosition, Cell victimCheckerCell) {
         if (victimCheckerCell.TypeOfCheckerOn != majorCheckerCell.TypeOfCheckerOn) {
             CheckerType transitionCheckerBuffer = majorCheckerCell.TypeOfCheckerOn;
             majorCheckerCell.HandleCheckerOnMe(transitionCheckerBuffer, false, false); 
             
             // Killing the victim. Be sure that u killed any possible type of enemy checker (major also killable)
-            victimCheckerCell.HandleCheckerOnMe(victimCheckerCell.TypeOfCheckerOn, false, false);
             PlayersController.ReduceCheckerFromPlayer(victimCheckerCell.TypeOfCheckerOn);
+            victimCheckerCell.HandleCheckerOnMe(victimCheckerCell.TypeOfCheckerOn, false, false);
 
             Board.MatrixOfCells[targetPosition.x, targetPosition.y].HandleCheckerOnMe(transitionCheckerBuffer, true, true);
-            if (!PredicatedRules.MajorMovesAvaiable(targetPosition)) {
+            if (!PredicatedRules.IsMajorMovesAvaiable(targetPosition)) {
                 _strokeTransition.Invoke();
             }
         }

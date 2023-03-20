@@ -42,6 +42,7 @@ public class PlayersController : MonoBehaviour
             _isGameOver = true;
         } else {
             _currentPlayer = _players[_players.IndexOf(_currentPlayer) == _players.Count - 1 ? 0 : _players.IndexOf(_currentPlayer) + 1];
+            Debug.Log("Current player + " + _currentPlayer.CheckerType + " with "  + _currentPlayer.CheckersAmount + " checkers");
             
             if (_currentPlayer.CheckersAmount <= 0) {
                 EliminatePlayer(_currentPlayer);
@@ -60,8 +61,9 @@ public class PlayersController : MonoBehaviour
         ChangeCurrentPlayer();
     }
 
-    public static void ReduceCheckerFromPlayer(CheckerType checkerThatKilled) {
-        Players.Find((CheckersPlayer player) => player.CheckerType == checkerThatKilled)?.ReduceChecker();
+    public static void ReduceCheckerFromPlayer(CheckerType checkerThatGotKilled) {
+        Debug.Log("Reduce call");
+        Players.Find((CheckersPlayer player) => player.CheckerType == checkerThatGotKilled)?.ReduceChecker();
     }
 
     public static void AddCheckerToPlayer(CheckerType checkerType) {

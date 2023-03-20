@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public struct Position {
+public struct BoardPosition {
     public int x;
     public int y;
 
-    public Position (int _x, int _y) {
+    public BoardPosition (int _x, int _y) {
         x = _x;
         y = _y;
     }
@@ -26,11 +26,11 @@ public class Cell : MonoBehaviour, IPointerClickHandler
     [SerializeField] GameObject topChecker;
     [SerializeField] GameObject majorityState;
 
-    private Position _position;
+    private BoardPosition _position;
     private bool _hasCheckerOn;
     private bool _hasMajorCheckerOn;
     private bool _isActive;
-    private CheckerType _typeOfCheckerOn;
+    private CheckerType _typeOfCheckerOn = CheckerType.noType;
 
     public bool HaveCheckerOn {
         get {
@@ -64,6 +64,12 @@ public class Cell : MonoBehaviour, IPointerClickHandler
         }
     }
 
+    public BoardPosition Position {
+        get {
+            return _position;
+        }
+    }
+
     #region UnityMethods
 
     public void OnPointerClick(PointerEventData pointerEventData) {
@@ -78,7 +84,7 @@ public class Cell : MonoBehaviour, IPointerClickHandler
 
     #region Public Methods
 
-    public void InitializeCell(bool isActiveCell, Position newPosition) {
+    public void InitializeCell(bool isActiveCell, BoardPosition newPosition) {
        image.color = isActiveCell ? activeColor : inactiveColor;
        _isActive = isActiveCell;
        _position = newPosition;
@@ -108,9 +114,7 @@ public class Cell : MonoBehaviour, IPointerClickHandler
         _hasMajorCheckerOn = isMajorChecker;
         majorityState.SetActive(isMajorChecker);
 
-        if (isPlacing) {
-            _typeOfCheckerOn = checker;
-        }
+        _typeOfCheckerOn = isPlacing ? checker : CheckerType.noType;
     }
 
     public void AddCheckerToCell(CheckerType checkerType) {

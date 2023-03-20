@@ -3,7 +3,7 @@ using UnityEngine;
 
 public static class PredicatedRules
 {
-    public static bool MajorityConditionPredicate(Cell chosenCell, Position targetPosition) {
+    public static bool MajorityConditionPredicate(Cell chosenCell, BoardPosition targetPosition) {
         if (!chosenCell.HaveMajorCheckerOn) {
             switch(chosenCell.TypeOfCheckerOn) {
                 case CheckerType.bot:
@@ -24,7 +24,7 @@ public static class PredicatedRules
         return true;
     }
 
-    public static bool CheckerMoveCondition(bool isMajorChecker, Position targetPosition, Position currentPosition) {
+    public static bool CheckerMoveCondition(bool isMajorChecker, BoardPosition targetPosition, BoardPosition currentPosition) {
         if (!isMajorChecker) 
             return 
                 (targetPosition.x != currentPosition.x && targetPosition.y != currentPosition.y) && 
@@ -35,7 +35,7 @@ public static class PredicatedRules
                 (Mathf.Abs(targetPosition.x - currentPosition.x) == Mathf.Abs(targetPosition.y - currentPosition.y));
     }
 
-    public static bool CheckerAttackCondition(CheckerType attackingCheckerType, Position targetPosition, Position currentPosition) {
+    public static bool CheckerAttackCondition(CheckerType attackingCheckerType, BoardPosition targetPosition, BoardPosition currentPosition) {
         if (attackingCheckerType is CheckerType.bot or CheckerType.top) {
             return 
                 (Mathf.Abs(targetPosition.x - currentPosition.x) == 2) &&
@@ -52,8 +52,8 @@ public static class PredicatedRules
         return false;
     }
 
-    public static List<Cell> MajorMoveAdditionalCondition(Position currentPosition, Position targetPosition) {
-        Position checkingPosition = currentPosition;
+    public static List<Cell> MajorMoveAdditionalCondition(BoardPosition currentPosition, BoardPosition targetPosition) {
+        BoardPosition checkingPosition = currentPosition;
         List<Cell> checkersOnTheWay = new List<Cell>();
 
         while (checkingPosition.x != targetPosition.x || checkingPosition.y != targetPosition.y) {
@@ -75,7 +75,26 @@ public static class PredicatedRules
         return checkersOnTheWay;
     }
 
-    public static bool CheckerMovesAvaiable(Position freshPosition) {
+    public static bool IsAttackVariationExist() {
+        for(int x = 0; x < Board.MatrixSize; x++) {
+            for (int y = 0; y < Board.MatrixSize; y++) {
+                if (Board.MatrixOfCells[x,y].TypeOfCheckerOn == PlayersController.CurrentCheckersTypeTurn) {
+                    if (!Board.MatrixOfCells[x,y].HaveMajorCheckerOn && IsExtraCheckerAttacksAvaiable(Board.MatrixOfCells[x,y].Position) || 
+                        Board.MatrixOfCells[x,y].HaveMajorCheckerOn && IsMajorMovesAvaiable(Board.MatrixOfCells[x,y].Position)) {
+
+                            if (IsExtraCheckerAttacksAvaiable(Board.MatrixOfCells[x,y].Position)) {
+                                Debug.Log("Checker moves avaiable for + " + Board.MatrixOfCells[x,y].Position.x + " " + Board.MatrixOfCells[x,y].Position.y);
+                            }
+                            return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public static bool IsExtraCheckerAttacksAvaiable(BoardPosition freshPosition) {
         if ((freshPosition.x - 2) is >= 0 and <= 10) {
             if ((freshPosition.y - 2) is >= 0 and <= 10) {
                 if (!Board.MatrixOfCells[freshPosition.x - 2, freshPosition.y - 2].HaveCheckerOn) {
@@ -115,7 +134,7 @@ public static class PredicatedRules
         return false;
     }
 
-    public static bool MajorMovesAvaiable(Position freshPosition) {
+    public static bool IsMajorMovesAvaiable(BoardPosition freshPosition) {
         if (freshPosition.x > 1) { // TOP DIRECTIONS
             for(int i = freshPosition.x - 1, columnMargin = 1; i > 0; i--, columnMargin++) {
                 

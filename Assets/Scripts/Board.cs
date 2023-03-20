@@ -1,6 +1,7 @@
 using UnityEngine;
 
 public enum CheckerType {
+    noType,
     bot,
     left,
     top,
@@ -34,7 +35,7 @@ public class Board : MonoBehaviour
 
     private void Start() {
         InitializeCells();
-        // PlaceCheckers();
+        //PlaceCheckers();
         TestPlacing();
          _notificationManager.ShowNotification(PlayersController.CurrentCheckersTypeTurn.ToString() + ", you first");
     }
@@ -43,7 +44,7 @@ public class Board : MonoBehaviour
         int k = 0;
         for (int i = 0; i < _matrixSize; i++) {
             for (int j = 0; j < _matrixSize; j++) {
-                _rTransform.GetChild(k).GetComponent<Cell>().InitializeCell(k%2 != 0, new Position(i, j)); // Paint cells
+                _rTransform.GetChild(k).GetComponent<Cell>().InitializeCell(k%2 != 0, new BoardPosition(i, j)); // Paint cells
                 _matrixOfCells[i, j] = _rTransform.GetChild(k).GetComponent<Cell>(); // Fill the matrix with cells
                 k++;
             }

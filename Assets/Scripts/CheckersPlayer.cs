@@ -1,38 +1,39 @@
 public class CheckersPlayer
 {
-    private CheckerType myCheckerColor;
-    private int checkersAmount;
+    private CheckerType _checkersType;
+    private int _checkersAmount;
 
     public int CheckersAmount { 
         set {
-            checkersAmount = value;
+            _checkersAmount = value;
         }
 
         get { 
-            return checkersAmount;
+            return _checkersAmount;
         }
     }
 
     public CheckerType CheckerType { 
         get {
-            return myCheckerColor;
+            return _checkersType;
         }
     }
 
-    public CheckersPlayer(CheckerType _checkersTypeColor, int _checkersAmount) {
-        myCheckerColor = _checkersTypeColor;
-        checkersAmount = _checkersAmount;
+    public CheckersPlayer(CheckerType checkersType, int checkersAmount) {
+        _checkersType = checkersType;
+        _checkersAmount = checkersAmount;
     }
 
     public void ReduceCheckers(int reduceAmount) {
-        if (reduceAmount < checkersAmount) {
-            checkersAmount -= reduceAmount;
+        if (reduceAmount < _checkersAmount) {
+            _checkersAmount -= reduceAmount;
         }
     }
 
     public void ReduceChecker() {
-        if (checkersAmount > 0) {
-            checkersAmount--;
+        if (_checkersAmount > 0) {
+            UnityEngine.Debug.Log("Redusced 1 checker from" + CheckerType);
+            _checkersAmount--;
         }
     }
 }
