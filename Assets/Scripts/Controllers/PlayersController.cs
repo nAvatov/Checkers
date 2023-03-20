@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -32,7 +31,7 @@ public class PlayersController : MonoBehaviour
     }
     // Start is called before the first frame update
     void Start() {
-        MovementController._legalMoveDone = ChangeCurrentPlayer;
+        MovementController._strokeTransition = ChangeCurrentPlayer;
     }
 
     #region Private Methods

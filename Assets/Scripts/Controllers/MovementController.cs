@@ -3,7 +3,7 @@ using System.Collections.Generic;
 public static class MovementController
 {
     private static Position _chosenPosition = new Position(-1, -1);
-    public static System.Action _legalMoveDone;
+    public static System.Action _strokeTransition;
 
     #region Public Methods
         
@@ -25,25 +25,28 @@ public static class MovementController
 
         // CHECKER
         if (!chosenBefore.HaveMajorCheckerOn) {
-            switch (chosenBefore.TypeOfCheckerOn) {
-                case CheckerType.bot : { 
-                    MoveChecker(chosenBefore, targetPosition, targetPosition.x < _chosenPosition.x);
-                    break;
+            if (!PredicatedRules.CheckerMovesAvaiable(_chosenPosition)) {
+                switch (chosenBefore.TypeOfCheckerOn) {
+                    case CheckerType.bot : { 
+                        MoveChecker(chosenBefore, targetPosition, targetPosition.x < _chosenPosition.x);
+                        break;
+                    }
+                    case CheckerType.left: { 
+                        MoveChecker(chosenBefore, targetPosition, targetPosition.y > _chosenPosition.y);
+                        break;
+                    }
+                    case CheckerType.top: {
+                        MoveChecker(chosenBefore, targetPosition, targetPosition.x > _chosenPosition.x);
+                        break;
+                    }
+                    case CheckerType.right: {
+                        MoveChecker(chosenBefore, targetPosition, targetPosition.y < _chosenPosition.y);
+                        break;
+                    }
                 }
-                case CheckerType.left: { 
-                    MoveChecker(chosenBefore, targetPosition, targetPosition.y > _chosenPosition.y);
-                    break;
-                }
-                case CheckerType.top: {
-                    MoveChecker(chosenBefore, targetPosition, targetPosition.x > _chosenPosition.x);
-                    break;
-                }
-                case CheckerType.right: {
-                    MoveChecker(chosenBefore, targetPosition, targetPosition.y < _chosenPosition.y);
-                    break;
-                }
+            } else {
+                HandleAttack(chosenBefore, targetPosition);
             }
-            HandleAttack(chosenBefore, targetPosition);
         }
         // MAJOR CHECKER
         else {
@@ -76,7 +79,7 @@ public static class MovementController
             PlaceCheckerOnCell(transitionCheckerBuffer, targetPosition, isBecomingMajor, false);
 
             if (!PredicatedRules.CheckerMovesAvaiable(targetPosition) && !isBecomingMajor || !PredicatedRules.MajorMovesAvaiable(targetPosition) && isBecomingMajor) {
-                _legalMoveDone.Invoke();
+                _strokeTransition.Invoke();
             }
 
         } else {
@@ -89,11 +92,11 @@ public static class MovementController
             Board.MatrixOfCells[targetPosition.x, targetPosition.y].HaveMajorCheckerOn = true; 
             Board.MatrixOfCells[targetPosition.x, targetPosition.y].HandleCheckerOnMe(transitionChecker, true, true); // Place checker on new position (2nd click)
             if (!PredicatedRules.MajorMovesAvaiable(targetPosition) && noVictim) { 
-                _legalMoveDone.Invoke();
+                _strokeTransition.Invoke();
             }
         } else {
             Board.MatrixOfCells[targetPosition.x, targetPosition.y].HandleCheckerOnMe(transitionChecker); // Place checker on new position (2nd click)
-            if (noVictim) _legalMoveDone.Invoke();
+            if (noVictim) _strokeTransition.Invoke();
         }
     }
 
@@ -122,10 +125,13 @@ public static class MovementController
         List<Cell> checkersOnWay = PredicatedRules.MajorMoveAdditionalCondition(_chosenPosition, targetPosition);
         
         if (checkersOnWay != null) {
-            if (checkersOnWay.Count == 0) {
+            if (checkersOnWay.Count == 0 && !PredicatedRules.MajorMovesAvaiable(_chosenPosition)) {
                 MoveChecker(majorCheckerCell, targetPosition, true);
-            } else {
+                return;
+            } 
+            if (checkersOnWay.Count > 0) {
                 MajorAttack(majorCheckerCell, targetPosition, checkersOnWay[0]);
+                return;
             }
         }
     }
@@ -141,7 +147,7 @@ public static class MovementController
 
             Board.MatrixOfCells[targetPosition.x, targetPosition.y].HandleCheckerOnMe(transitionCheckerBuffer, true, true);
             if (!PredicatedRules.MajorMovesAvaiable(targetPosition)) {
-                _legalMoveDone.Invoke();
+                _strokeTransition.Invoke();
             }
         }
     }
