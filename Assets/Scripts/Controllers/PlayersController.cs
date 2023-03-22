@@ -89,4 +89,10 @@ public class PlayersController : MonoBehaviour
 
         return p;
     }
+
+    public static void RefreshPlayers() {
+        _players = new List<CheckersPlayer>();
+        _currentPlayer = null;
+        _isGameOver = false;
+    }
 }

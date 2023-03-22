@@ -9,9 +9,9 @@ public static class PredicatedRules
                 case CheckerType.bot:
                     return targetPosition.x == 0;
                 case CheckerType.top: 
-                    return targetPosition.x == Board.MatrixSize - 1;
+                    return targetPosition.x == Board.CurrentMatrixSize - 1;
                 case CheckerType.left:
-                    return targetPosition.y == Board.MatrixSize - 1;
+                    return targetPosition.y == Board.CurrentMatrixSize - 1;
                 case CheckerType.right: 
                     return targetPosition.y == 0;
                 default: {
@@ -36,20 +36,10 @@ public static class PredicatedRules
     }
 
     public static bool CheckerAttackCondition(CheckerType attackingCheckerType, BoardPosition targetPosition, BoardPosition currentPosition) {
-        if (attackingCheckerType is CheckerType.bot or CheckerType.top) {
-            return 
-                (Mathf.Abs(targetPosition.x - currentPosition.x) == 2) &&
-                (targetPosition.x != currentPosition.x && targetPosition.y != currentPosition.y);
-        }
-
-        if (attackingCheckerType is CheckerType.right or CheckerType.left) { 
-            return 
-                (Mathf.Abs(targetPosition.y - currentPosition.y) == 2) &&
-                (targetPosition.x != currentPosition.x && targetPosition.y != currentPosition.y);
-        }
-
-        Debug.LogError("Checker attack condition is unsatisfied. Something wrong with attackingCheckerType.");
-        return false;
+        return  Mathf.Abs(targetPosition.x - currentPosition.x) == 2 && 
+                Mathf.Abs(targetPosition.y - currentPosition.y) == 2 && 
+                targetPosition.x != currentPosition.x && 
+                targetPosition.y != currentPosition.y;
     }
 
     public static List<Cell> MajorMoveAdditionalCondition(BoardPosition currentPosition, BoardPosition targetPosition) {
@@ -76,8 +66,8 @@ public static class PredicatedRules
     }
 
     public static bool IsAttackVariationExist() {
-        for(int x = 0; x < Board.MatrixSize; x++) {
-            for (int y = 0; y < Board.MatrixSize; y++) {
+        for(int x = 0; x < Board.CurrentMatrixSize; x++) {
+            for (int y = 0; y < Board.CurrentMatrixSize; y++) {
                 if (Board.MatrixOfCells[x,y].TypeOfCheckerOn == PlayersController.CurrentCheckersTypeTurn) {
                     if (!Board.MatrixOfCells[x,y].HaveMajorCheckerOn && IsExtraCheckerAttacksAvaiable(Board.MatrixOfCells[x,y].Position) || 
                         Board.MatrixOfCells[x,y].HaveMajorCheckerOn && IsMajorMovesAvaiable(Board.MatrixOfCells[x,y].Position)) {
@@ -123,6 +113,7 @@ public static class PredicatedRules
             }
 
             if ((freshPosition.y + 2) is >= 0 and <= 10) {
+                Debug.Log(freshPosition.x + " " + freshPosition.y);
                 if (!Board.MatrixOfCells[freshPosition.x + 2, freshPosition.y + 2].HaveCheckerOn) {
                     if (Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y + 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y + 1].TypeOfCheckerOn != PlayersController.CurrentCheckersTypeTurn) {
                         return true;
@@ -153,7 +144,7 @@ public static class PredicatedRules
                 } 
 
                 // TOP RIGHT WAY
-                if (freshPosition.y + columnMargin <= Board.MatrixSize - 2) {
+                if (freshPosition.y + columnMargin <= Board.CurrentMatrixSize - 2) {
                     if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
                         Debug.Log("SOME ON MY TOP RIGHT WAY");
                         if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) { // Check is it enemy checker?
@@ -168,8 +159,8 @@ public static class PredicatedRules
             } 
         }
 
-        if (freshPosition.x < Board.MatrixSize - 2) { // BOT DIRECTIONS
-            for(int i = freshPosition.x + 1, columnMargin = 1; i < Board.MatrixSize - 1; i++, columnMargin++) {
+        if (freshPosition.x < Board.CurrentMatrixSize - 2) { // BOT DIRECTIONS
+            for(int i = freshPosition.x + 1, columnMargin = 1; i < Board.CurrentMatrixSize - 1; i++, columnMargin++) {
                 // BOT LEFT WAY
                 if (freshPosition.y - columnMargin > 0) {
                     if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
@@ -185,7 +176,7 @@ public static class PredicatedRules
                 }
 
                 // BOT RIGHT WAY
-                if (freshPosition.y + columnMargin <= Board.MatrixSize - 2) {
+                if (freshPosition.y + columnMargin <= Board.CurrentMatrixSize - 2) {
                     if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
                         Debug.Log("SOME ON MY BOT RIGHT WAY");
                         if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) { // Check is it enemy checker?

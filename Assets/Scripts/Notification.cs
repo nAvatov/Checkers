@@ -1,36 +1,27 @@
 using System.Collections;
-using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 public class Notification : MonoBehaviour
 {
     [SerializeField] TMPro.TextMeshProUGUI textTMP;
     [SerializeField] CanvasGroup cg;
+    [SerializeField] ButtonsController buttonsController;
 
     public void ShowNotification(string text) {
         StopAllCoroutines();
         textTMP.SetText(text);
-        StartCoroutine(RevealNotification());
-    }
+        cg.DOFade(1, 1f).OnComplete(() => {
+            cg.interactable = true;
+            cg.blocksRaycasts = true;
+            cg.DOFade(0, 1f).OnComplete(() => {
+                cg.interactable = false;
+                cg.blocksRaycasts = false;
 
-    public IEnumerator RevealNotification() {
-        while(cg.alpha < 1) {
-            cg.alpha += 0.01f;
-            yield return new WaitForSecondsRealtime(0.01f);
-        }
-
-        cg.interactable = true;
-        cg.blocksRaycasts = true;
-        StartCoroutine(HideNotification());
-    }
-
-    private IEnumerator HideNotification() {
-        cg.interactable = false;
-        cg.blocksRaycasts = false;
-
-        while (cg.alpha > 0) {
-            cg.alpha -= 0.01f;
-            yield return new WaitForSecondsRealtime(0.01f);
-        }
+                if (PlayersController.IsGameOver) {
+                    buttonsController.HandleButtonsPanelWidth();
+                }
+            });
+        });
     }
 }

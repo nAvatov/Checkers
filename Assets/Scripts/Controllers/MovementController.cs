@@ -72,35 +72,33 @@ public static class MovementController
     }
 
     private static void ExchangeCells(Cell previousCell, BoardPosition targetPosition, bool isBecomingMajor, BoardPosition victimPosition) {
-        CheckerType transitionCheckerBuffer = previousCell.TypeOfCheckerOn;
-        previousCell.HandleCheckerOnMe(transitionCheckerBuffer, false);
+        Cell transitionCellState = previousCell;
 
         if (victimPosition.x != -1 && victimPosition.y != -1) { 
             // Checker is eliminated
             PlayersController.ReduceCheckerFromPlayer(Board.MatrixOfCells[victimPosition.x, victimPosition.y].TypeOfCheckerOn);
             Board.MatrixOfCells[victimPosition.x, victimPosition.y].HandleCheckerOnMe(Board.MatrixOfCells[victimPosition.x, victimPosition.y].TypeOfCheckerOn, false, false);
-            PlaceCheckerOnCell(transitionCheckerBuffer, targetPosition, isBecomingMajor, false);
-
-            if (!PredicatedRules.IsExtraCheckerAttacksAvaiable(targetPosition) && !isBecomingMajor || !PredicatedRules.IsMajorMovesAvaiable(targetPosition) && isBecomingMajor) {
-                UnityEngine.Debug.Log("No extra attack variants [ExchangeCells func]");
-                _strokeTransition.Invoke();
-            }
-
+            PlaceCheckerOnCell(transitionCellState, targetPosition, isBecomingMajor, false);
         } else {
-            PlaceCheckerOnCell(transitionCheckerBuffer, targetPosition, isBecomingMajor, true);
+            PlaceCheckerOnCell(transitionCellState, targetPosition, isBecomingMajor, true);
         }
+
+        previousCell.HandleCheckerOnMe(transitionCellState.TypeOfCheckerOn, false);
     }
 
-    private static void PlaceCheckerOnCell(CheckerType transitionChecker, BoardPosition targetPosition, bool isMajorNow, bool noVictim) {
+    private static void PlaceCheckerOnCell(Cell previousCell, BoardPosition targetPosition, bool isMajorNow, bool noVictim) {
         if (isMajorNow) {
-            Board.MatrixOfCells[targetPosition.x, targetPosition.y].HaveMajorCheckerOn = true; 
-            Board.MatrixOfCells[targetPosition.x, targetPosition.y].HandleCheckerOnMe(transitionChecker, true, true); // Place checker on new position (2nd click)
-            if (!PredicatedRules.IsMajorMovesAvaiable(targetPosition) && noVictim) { 
+            Board.MatrixOfCells[targetPosition.x, targetPosition.y].HandleCheckerOnMe(previousCell.TypeOfCheckerOn, true, true); // Place checker on new position (2nd click)
+            // Change player if current fresh major checker don't have any avaiable attack variants 
+            if (!PredicatedRules.IsMajorMovesAvaiable(targetPosition) && noVictim || previousCell.HaveMajorCheckerOn) { 
                 _strokeTransition.Invoke();
             }
         } else {
-            Board.MatrixOfCells[targetPosition.x, targetPosition.y].HandleCheckerOnMe(transitionChecker); // Place checker on new position (2nd click)
-            if (noVictim) _strokeTransition.Invoke();
+            Board.MatrixOfCells[targetPosition.x, targetPosition.y].HandleCheckerOnMe(previousCell.TypeOfCheckerOn); // Place checker on new position (2nd click)
+            // Change player if placing is clear or if placing after killing enemy checker and no extra attacks is avaiable
+            if (noVictim || !noVictim && !PredicatedRules.IsExtraCheckerAttacksAvaiable(targetPosition)) {
+                _strokeTransition.Invoke();
+            }
         }
     }
 
