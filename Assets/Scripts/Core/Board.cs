@@ -84,7 +84,9 @@ public class Board : MonoBehaviour
         
         _notificationManager.ShowNotification(PlayersController.CurrentCheckersTypeTurn.ToString() + ", you first");
     }
-
+    /// <summary>
+    /// Fill matrix with cells for realtime access to any of them.
+    /// </summary>
     private void InitializeMatrixWithCells() {
         int k = 0;
 
@@ -119,6 +121,9 @@ public class Board : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Removes amy checkers from all cells on board.
+    /// </summary>
     private void RefreshBoardCells() {
         for (int i = 0; i < CurrentMatrixSize; i++) {
             for (int j = 0; j < CurrentMatrixSize; j++) { 
@@ -127,6 +132,9 @@ public class Board : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Disable all cells and enables needed amount.
+    /// </summary>
     private void HandleCellsAmount() {
         DisableAllCells();
         for(int i = 0; i < CurrentMatrixSize * CurrentMatrixSize; i++) {
@@ -140,6 +148,9 @@ public class Board : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Paint cells and determines their activity.
+    /// </summary>
     private void PaintCells() {
         for (int i = 0; i < CurrentMatrixSize; i++) {
             for (int j = 0; j < CurrentMatrixSize; j++) {

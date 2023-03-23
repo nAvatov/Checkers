@@ -24,15 +24,8 @@ public class CheckersPlayer
         _checkersAmount = checkersAmount;
     }
 
-    public void ReduceCheckers(int reduceAmount) {
-        if (reduceAmount < _checkersAmount) {
-            _checkersAmount -= reduceAmount;
-        }
-    }
-
     public void ReduceChecker() {
         if (_checkersAmount > 0) {
-            UnityEngine.Debug.Log("Redusced 1 checker from" + CheckerType);
             _checkersAmount--;
         }
     }

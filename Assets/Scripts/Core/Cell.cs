@@ -87,6 +87,9 @@ public class Cell : MonoBehaviour, IPointerClickHandler
        _position = newPosition;
     }
 
+    /// <summary>
+    /// Core method used to handle checker appearence on cell.
+    /// </summary>
     public void HandleCheckerOnMe(CheckerType checker, bool isPlacing = true, bool isMajorChecker = false) {
         switch(checker) {
             case CheckerType.bot: {
@@ -118,6 +121,10 @@ public class Cell : MonoBehaviour, IPointerClickHandler
         _typeOfCheckerOn = isPlacing ? checker : CheckerType.noType;
     }
 
+    /// <summary>
+    /// Method for adding new checker when board initializes.
+    /// </summary>
+    /// <param name="checkerType"></param>
     public void AddCheckerToCell(CheckerType checkerType) {
         HandleCheckerOnMe(checkerType);
         PlayersController.AddCheckerToPlayer(checkerType);

@@ -505,15 +505,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45bb1830a1294794d8264e223db4268b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  image: {fileID: 3991250913008556897}
-  selectionPaddingObj: {fileID: 637430960454564346}
-  activeColor: {r: 1, g: 0.99119574, b: 0.5235849, a: 1}
-  inactiveColor: {r: 0.3962264, g: 0.2224101, b: 0.2224101, a: 1}
-  leftChecker: {fileID: 4978702488902526631}
-  botChecker: {fileID: 7461150053558752285}
-  rightChecker: {fileID: 4948425056393179452}
-  topChecker: {fileID: 5835715248954114387}
-  majorityState: {fileID: 291579149148925328}
+  _image: {fileID: 3991250913008556897}
+  _selectionPaddingObj: {fileID: 637430960454564346}
+  _activeColor: {r: 0.9528302, g: 0.9460144, b: 0.6427109, a: 1}
+  _inactiveColor: {r: 0.4056604, g: 0.24301353, b: 0.24301353, a: 1}
+  _leftChecker: {fileID: 4978702488902526631}
+  _botChecker: {fileID: 7461150053558752285}
+  _rightChecker: {fileID: 4948425056393179452}
+  _topChecker: {fileID: 5835715248954114387}
+  _majorityState: {fileID: 291579149148925328}
 --- !u!1 &5835715248954114387
 GameObject:
   m_ObjectHideFlags: 0

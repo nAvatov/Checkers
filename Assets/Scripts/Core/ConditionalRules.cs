@@ -1,9 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class PredicatedRules
+/// <summary>
+/// Static class describes checkers limitations and rules programmatically.
+/// </summary>
+public static class ConditionalRules
 {
-    public static bool MajorityConditionPredicate(Cell chosenCell, BoardPosition targetPosition) {
+    /// <summary>
+    /// Determines checker major state ability due to target position
+    /// </summary>
+    public static bool BecomingMajorCondition(Cell chosenCell, BoardPosition targetPosition) {
         if (!chosenCell.HaveMajorCheckerOn) {
             switch(chosenCell.TypeOfCheckerOn) {
                 case CheckerType.bot:
@@ -15,7 +21,6 @@ public static class PredicatedRules
                 case CheckerType.right: 
                     return targetPosition.y == 0;
                 default: {
-                    Debug.LogError("Unsupported checker type");
                     return false;
                 }
             }
@@ -24,6 +29,9 @@ public static class PredicatedRules
         return true;
     }
 
+    /// <summary>
+    /// Returns move avaiability status for both checker types.
+    /// </summary>
     public static bool CheckerMoveCondition(bool isMajorChecker, BoardPosition targetPosition, BoardPosition currentPosition) {
         if (!isMajorChecker) 
             return 
@@ -35,6 +43,9 @@ public static class PredicatedRules
                 (Mathf.Abs(targetPosition.x - currentPosition.x) == Mathf.Abs(targetPosition.y - currentPosition.y));
     }
 
+    /// <summary>
+    /// Returns attack avaiability for simple checker.
+    /// </summary>
     public static bool CheckerAttackCondition(CheckerType attackingCheckerType, BoardPosition targetPosition, BoardPosition currentPosition) {
         return  Mathf.Abs(targetPosition.x - currentPosition.x) == 2 && 
                 Mathf.Abs(targetPosition.y - currentPosition.y) == 2 && 
@@ -42,7 +53,10 @@ public static class PredicatedRules
                 targetPosition.y != currentPosition.y;
     }
 
-    public static List<Cell> MajorMoveAdditionalCondition(BoardPosition currentPosition, BoardPosition targetPosition) {
+    /// <summary>
+    /// Calculates the list of obstacles (checkers) for current major checker.
+    /// </summary>
+    public static List<Cell> ObstaclesForMajor(BoardPosition currentPosition, BoardPosition targetPosition) {
         BoardPosition checkingPosition = currentPosition;
         List<Cell> checkersOnTheWay = new List<Cell>();
 
@@ -65,16 +79,15 @@ public static class PredicatedRules
         return checkersOnTheWay;
     }
 
+    /// <summary>
+    /// Core condition for searching move-action avaiability.
+    /// </summary>
     public static bool IsAttackVariationExist() {
         for(int x = 0; x < Board.CurrentMatrixSize; x++) {
             for (int y = 0; y < Board.CurrentMatrixSize; y++) {
                 if (Board.MatrixOfCells[x,y].TypeOfCheckerOn == PlayersController.CurrentCheckersTypeTurn) {
                     if (!Board.MatrixOfCells[x,y].HaveMajorCheckerOn && IsExtraCheckerAttacksAvaiable(Board.MatrixOfCells[x,y].Position) || 
-                        Board.MatrixOfCells[x,y].HaveMajorCheckerOn && IsMajorMovesAvaiable(Board.MatrixOfCells[x,y].Position)) {
-
-                            if (IsExtraCheckerAttacksAvaiable(Board.MatrixOfCells[x,y].Position)) {
-                                Debug.Log("Checker moves avaiable for + " + Board.MatrixOfCells[x,y].Position.x + " " + Board.MatrixOfCells[x,y].Position.y);
-                            }
+                        Board.MatrixOfCells[x,y].HaveMajorCheckerOn && IsExtraMajorAttacksAvaiable(Board.MatrixOfCells[x,y].Position)) {
                             return true;
                     }
                 }
@@ -84,6 +97,9 @@ public static class PredicatedRules
         return false;
     }
 
+    /// <summary>
+    /// Returns extra attack avaiability for simple checker.
+    /// </summary>
     public static bool IsExtraCheckerAttacksAvaiable(BoardPosition freshPosition) {
         if ((freshPosition.x - 2) >= 0 && (freshPosition.x - 2) <= Board.CurrentMatrixSize - 1) {
             if ((freshPosition.y - 2) >= 0 && (freshPosition.y - 2) <= Board.CurrentMatrixSize - 1) {
@@ -125,18 +141,18 @@ public static class PredicatedRules
         return false;
     }
 
-    public static bool IsMajorMovesAvaiable(BoardPosition freshPosition) {
-        if (freshPosition.x > 1) { // TOP DIRECTIONS
+    /// <summary>
+    /// Returns extra attacks avaiability for major checker.
+    /// </summary>
+    public static bool IsExtraMajorAttacksAvaiable(BoardPosition freshPosition) {
+        // TOP DIRECTIONS
+        if (freshPosition.x > 1) {
             for(int i = freshPosition.x - 1, columnMargin = 1; i > 0; i--, columnMargin++) {
-                
                 // TOP LEFT WAY
                 if (freshPosition.y - columnMargin > 0) {
-                    if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
-                        Debug.Log("SOME ON MY TOP LEFT WAY");
-                        if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) { // Check is it enemy checker?
-                            Debug.Log("IT'S ENEMY!TL");
-                            if (!Board.MatrixOfCells[i - 1, freshPosition.y - columnMargin - 1].HaveCheckerOn) { // Is there empty cell behind enemy ?
-                                Debug.Log("I CAN KILL HIM!TL");
+                    if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].HaveCheckerOn) {
+                        if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) {
+                            if (!Board.MatrixOfCells[i - 1, freshPosition.y - columnMargin - 1].HaveCheckerOn) {
                                 return true;
                             }
                         }
@@ -145,12 +161,9 @@ public static class PredicatedRules
 
                 // TOP RIGHT WAY
                 if (freshPosition.y + columnMargin <= Board.CurrentMatrixSize - 2) {
-                    if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
-                        Debug.Log("SOME ON MY TOP RIGHT WAY");
-                        if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) { // Check is it enemy checker?
-                            Debug.Log("IT'S ENEMY!TR");
-                            if (!Board.MatrixOfCells[i - 1, freshPosition.y + columnMargin + 1].HaveCheckerOn) { // Is there empty cell behind enemy ?
-                                Debug.Log("I CAN KILL HIM!TR");
+                    if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].HaveCheckerOn) {
+                        if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) {
+                            if (!Board.MatrixOfCells[i - 1, freshPosition.y + columnMargin + 1].HaveCheckerOn) {
                                 return true;
                             }
                         }
@@ -158,17 +171,14 @@ public static class PredicatedRules
                 }
             } 
         }
-
-        if (freshPosition.x < Board.CurrentMatrixSize - 2) { // BOT DIRECTIONS
+        // BOT DIRECTIONS
+        if (freshPosition.x < Board.CurrentMatrixSize - 2) {
             for(int i = freshPosition.x + 1, columnMargin = 1; i < Board.CurrentMatrixSize - 1; i++, columnMargin++) {
                 // BOT LEFT WAY
                 if (freshPosition.y - columnMargin > 0) {
-                    if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
-                        Debug.Log("SOME ON MY BOT LEFT WAY");
-                        if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) { // Check is it enemy checker?
-                            Debug.Log("IT'S ENEMY!BL");
-                            if (!Board.MatrixOfCells[i + 1, freshPosition.y - columnMargin - 1].HaveCheckerOn) { // Is there empty cell behind enemy ?
-                                Debug.Log("I CAN KILL HIM!BL");
+                    if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].HaveCheckerOn) {
+                        if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) {
+                            if (!Board.MatrixOfCells[i + 1, freshPosition.y - columnMargin - 1].HaveCheckerOn) {
                                 return true;
                             }
                         }
@@ -177,12 +187,9 @@ public static class PredicatedRules
 
                 // BOT RIGHT WAY
                 if (freshPosition.y + columnMargin <= Board.CurrentMatrixSize - 2) {
-                    if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].HaveCheckerOn) { // Finding any checker on current major checker way
-                        Debug.Log("SOME ON MY BOT RIGHT WAY");
-                        if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) { // Check is it enemy checker?
-                            Debug.Log("IT'S ENEMY!BR");
-                            if (!Board.MatrixOfCells[i + 1, freshPosition.y + columnMargin + 1].HaveCheckerOn) { // Is there empty cell behind enemy ?
-                                Debug.Log("I CAN KILL HIM!BR");
+                    if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].HaveCheckerOn) {
+                        if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) {
+                            if (!Board.MatrixOfCells[i + 1, freshPosition.y + columnMargin + 1].HaveCheckerOn) {
                                 return true;
                             }
                         }
