@@ -46,7 +46,7 @@ public static class MovementController
                         break;
                     }
                 }
-            } else {
+            } else {   
                 HandleAttack(chosenBefore, targetPosition);
             }
         }
@@ -93,17 +93,18 @@ public static class MovementController
     /// <summary>
     /// Core method for placing checker on cell.
     /// </summary>
-    private static void PlaceCheckerOnCell(Cell previousCell, BoardPosition targetPosition, bool isMajorNow, bool noVictim) {
+    private static void PlaceCheckerOnCell(Cell previousCell, BoardPosition targetPosition, bool isMajorNow, bool placedWithoutKilling) {
         if (isMajorNow) {
             Board.MatrixOfCells[targetPosition.x, targetPosition.y].HandleCheckerOnMe(previousCell.TypeOfCheckerOn, true, true); // Place checker on new position (2nd click)
             // Change player if current fresh major checker don't have any avaiable attack variants 
-            if (!ConditionalRules.IsExtraMajorAttacksAvaiable(targetPosition) && noVictim || previousCell.HaveMajorCheckerOn) { 
+            UnityEngine.Debug.Log(ConditionalRules.IsExtraMajorAttacksAvaiable(targetPosition));
+            if (!ConditionalRules.IsExtraMajorAttacksAvaiable(targetPosition) || previousCell.HaveMajorCheckerOn) { 
                 _strokeTransition.Invoke();
             }
         } else {
             Board.MatrixOfCells[targetPosition.x, targetPosition.y].HandleCheckerOnMe(previousCell.TypeOfCheckerOn); // Place checker on new position (2nd click)
             // Change player if placing is clear or if placing after killing enemy checker and no extra attacks is avaiable
-            if (noVictim || !noVictim && !ConditionalRules.IsExtraCheckerAttacksAvaiable(targetPosition)) {
+            if (placedWithoutKilling || !placedWithoutKilling && !ConditionalRules.IsExtraCheckerAttacksAvaiable(targetPosition)) {
                 _strokeTransition.Invoke();
             }
         }
@@ -168,6 +169,7 @@ public static class MovementController
             if (!ConditionalRules.IsExtraMajorAttacksAvaiable(targetPosition)) {
                 _strokeTransition.Invoke();
             }
+            SoundController.PlaySound(SoundTypes.attack);
         }
     }
 

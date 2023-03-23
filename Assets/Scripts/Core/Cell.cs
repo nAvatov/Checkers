@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -17,6 +17,7 @@ public class Cell : MonoBehaviour, IPointerClickHandler
     [Header("Appearence on board")]
     [SerializeField] private UnityEngine.UI.Image _image;
     [SerializeField] private GameObject _selectionPaddingObj;
+    [SerializeField] private CanvasGroup _highlightPadding;
     [SerializeField] private Color _activeColor;
     [SerializeField] private Color _inactiveColor;
     [Header("Checkers")]
@@ -138,6 +139,12 @@ public class Cell : MonoBehaviour, IPointerClickHandler
         return _hasCheckerOn && (currentPlayerCheckerType != _typeOfCheckerOn);
     }
 
+    public void Highlight() {
+        _highlightPadding.DOFade(1, 0.5f).OnComplete(() => {
+            _highlightPadding.DOFade(0, 0.5f);
+        });
+    }
+
     #endregion
 
     private void RemoveAnyCheckerFromMe() {
@@ -146,5 +153,4 @@ public class Cell : MonoBehaviour, IPointerClickHandler
         _leftChecker.SetActive(false);
         _rightChecker.SetActive(false);
     }
-
 }

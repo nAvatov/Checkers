@@ -104,7 +104,8 @@ public static class ConditionalRules
         if ((freshPosition.x - 2) >= 0 && (freshPosition.x - 2) <= Board.CurrentMatrixSize - 1) {
             if ((freshPosition.y - 2) >= 0 && (freshPosition.y - 2) <= Board.CurrentMatrixSize - 1) {
                 if (!Board.MatrixOfCells[freshPosition.x - 2, freshPosition.y - 2].HaveCheckerOn) {
-                    if (Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y - 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y - 1].TypeOfCheckerOn != PlayersController.CurrentCheckersTypeTurn) { 
+                    if (Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y - 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y - 1].TypeOfCheckerOn != PlayersController.CurrentCheckersTypeTurn) {
+                        TipsController.HighlightTip(Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y - 1]); 
                         return true;
                     }
                 }
@@ -112,7 +113,8 @@ public static class ConditionalRules
 
             if ((freshPosition.y + 2) >= 0 && (freshPosition.y + 2) <= Board.CurrentMatrixSize - 1) {
                 if (!Board.MatrixOfCells[freshPosition.x - 2, freshPosition.y + 2].HaveCheckerOn) {
-                    if (Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y + 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y + 1].TypeOfCheckerOn != PlayersController.CurrentCheckersTypeTurn) { 
+                    if (Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y + 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y + 1].TypeOfCheckerOn != PlayersController.CurrentCheckersTypeTurn) {
+                        TipsController.HighlightTip(Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y + 1]);
                         return true;
                     }
                 }
@@ -123,6 +125,7 @@ public static class ConditionalRules
             if ((freshPosition.y - 2) >= 0 && (freshPosition.y - 2) <= Board.CurrentMatrixSize - 1) {
                 if (!Board.MatrixOfCells[freshPosition.x + 2, freshPosition.y - 2].HaveCheckerOn) {
                     if (Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y - 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y - 1].TypeOfCheckerOn != PlayersController.CurrentCheckersTypeTurn) {
+                        TipsController.HighlightTip(Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y - 1]);
                         return true;
                     }
                 }
@@ -132,6 +135,7 @@ public static class ConditionalRules
                 Debug.Log(freshPosition.x + " " + freshPosition.y);
                 if (!Board.MatrixOfCells[freshPosition.x + 2, freshPosition.y + 2].HaveCheckerOn) {
                     if (Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y + 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y + 1].TypeOfCheckerOn != PlayersController.CurrentCheckersTypeTurn) {
+                        TipsController.HighlightTip(Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y + 1]);
                         return true;
                     }
                 }
@@ -153,6 +157,7 @@ public static class ConditionalRules
                     if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].HaveCheckerOn) {
                         if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) {
                             if (!Board.MatrixOfCells[i - 1, freshPosition.y - columnMargin - 1].HaveCheckerOn) {
+                                TipsController.HighlightTip(Board.MatrixOfCells[i, freshPosition.y - columnMargin]);
                                 return true;
                             }
                         }
@@ -164,6 +169,7 @@ public static class ConditionalRules
                     if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].HaveCheckerOn) {
                         if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) {
                             if (!Board.MatrixOfCells[i - 1, freshPosition.y + columnMargin + 1].HaveCheckerOn) {
+                                TipsController.HighlightTip(Board.MatrixOfCells[i, freshPosition.y + columnMargin]);
                                 return true;
                             }
                         }
@@ -179,6 +185,7 @@ public static class ConditionalRules
                     if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].HaveCheckerOn) {
                         if (Board.MatrixOfCells[i, freshPosition.y - columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) {
                             if (!Board.MatrixOfCells[i + 1, freshPosition.y - columnMargin - 1].HaveCheckerOn) {
+                                TipsController.HighlightTip(Board.MatrixOfCells[i, freshPosition.y - columnMargin]);
                                 return true;
                             }
                         }
@@ -190,6 +197,7 @@ public static class ConditionalRules
                     if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].HaveCheckerOn) {
                         if (Board.MatrixOfCells[i, freshPosition.y + columnMargin].IsEnemyForCurrent(PlayersController.CurrentCheckersTypeTurn)) {
                             if (!Board.MatrixOfCells[i + 1, freshPosition.y + columnMargin + 1].HaveCheckerOn) {
+                                TipsController.HighlightTip(Board.MatrixOfCells[i, freshPosition.y + columnMargin]);
                                 return true;
                             }
                         }
