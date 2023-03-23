@@ -85,8 +85,8 @@ public static class PredicatedRules
     }
 
     public static bool IsExtraCheckerAttacksAvaiable(BoardPosition freshPosition) {
-        if ((freshPosition.x - 2) is >= 0 and <= 10) {
-            if ((freshPosition.y - 2) is >= 0 and <= 10) {
+        if ((freshPosition.x - 2) >= 0 && (freshPosition.x - 2) <= Board.CurrentMatrixSize - 1) {
+            if ((freshPosition.y - 2) >= 0 && (freshPosition.y - 2) <= Board.CurrentMatrixSize - 1) {
                 if (!Board.MatrixOfCells[freshPosition.x - 2, freshPosition.y - 2].HaveCheckerOn) {
                     if (Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y - 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y - 1].TypeOfCheckerOn != PlayersController.CurrentCheckersTypeTurn) { 
                         return true;
@@ -94,7 +94,7 @@ public static class PredicatedRules
                 }
             }
 
-            if ((freshPosition.y + 2) is >= 0 and <= 10) {
+            if ((freshPosition.y + 2) >= 0 && (freshPosition.y + 2) <= Board.CurrentMatrixSize - 1) {
                 if (!Board.MatrixOfCells[freshPosition.x - 2, freshPosition.y + 2].HaveCheckerOn) {
                     if (Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y + 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x - 1, freshPosition.y + 1].TypeOfCheckerOn != PlayersController.CurrentCheckersTypeTurn) { 
                         return true;
@@ -103,8 +103,8 @@ public static class PredicatedRules
             }
         }
 
-        if ((freshPosition.x + 2) is >= 0 and <= 10) {
-            if ((freshPosition.y - 2) is >= 0 and <= 10) {
+        if ((freshPosition.x + 2) >= 0 && (freshPosition.x + 2) <= Board.CurrentMatrixSize - 1) {
+            if ((freshPosition.y - 2) >= 0 && (freshPosition.y - 2) <= Board.CurrentMatrixSize - 1) {
                 if (!Board.MatrixOfCells[freshPosition.x + 2, freshPosition.y - 2].HaveCheckerOn) {
                     if (Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y - 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y - 1].TypeOfCheckerOn != PlayersController.CurrentCheckersTypeTurn) {
                         return true;
@@ -112,7 +112,7 @@ public static class PredicatedRules
                 }
             }
 
-            if ((freshPosition.y + 2) is >= 0 and <= 10) {
+            if ((freshPosition.y + 2) >= 0 && (freshPosition.y + 2) <= Board.CurrentMatrixSize - 1) {
                 Debug.Log(freshPosition.x + " " + freshPosition.y);
                 if (!Board.MatrixOfCells[freshPosition.x + 2, freshPosition.y + 2].HaveCheckerOn) {
                     if (Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y + 1].HaveCheckerOn && Board.MatrixOfCells[freshPosition.x + 1, freshPosition.y + 1].TypeOfCheckerOn != PlayersController.CurrentCheckersTypeTurn) {

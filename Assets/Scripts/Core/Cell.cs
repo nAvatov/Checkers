@@ -15,16 +15,16 @@ public struct BoardPosition {
 public class Cell : MonoBehaviour, IPointerClickHandler
 {
     [Header("Appearence on board")]
-    [SerializeField] UnityEngine.UI.Image image;
-    [SerializeField] GameObject selectionPaddingObj;
-    [SerializeField] Color activeColor;
-    [SerializeField] Color inactiveColor;
+    [SerializeField] private UnityEngine.UI.Image _image;
+    [SerializeField] private GameObject _selectionPaddingObj;
+    [SerializeField] private Color _activeColor;
+    [SerializeField] private Color _inactiveColor;
     [Header("Checkers")]
-    [SerializeField] GameObject leftChecker;
-    [SerializeField] GameObject botChecker;
-    [SerializeField] GameObject rightChecker;
-    [SerializeField] GameObject topChecker;
-    [SerializeField] GameObject majorityState;
+    [SerializeField] private GameObject _leftChecker;
+    [SerializeField] private GameObject _botChecker;
+    [SerializeField] private GameObject _rightChecker;
+    [SerializeField] private GameObject _topChecker;
+    [SerializeField] private GameObject _majorityState;
 
     private BoardPosition _position;
     private bool _hasCheckerOn;
@@ -52,12 +52,6 @@ public class Cell : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    public bool IsActiveCell {
-        get {
-            return _isActive;
-        }
-    }
-
     public CheckerType TypeOfCheckerOn {
         get {
             return _typeOfCheckerOn;
@@ -70,14 +64,15 @@ public class Cell : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    #region UnityMethods
+    #region Unity Methods
 
     public void OnPointerClick(PointerEventData pointerEventData) {
-        Debug.Log(TypeOfCheckerOn);
         if (_isActive && !PlayersController.IsGameOver) {
             if ((_hasCheckerOn && _typeOfCheckerOn == PlayersController.CurrentCheckersTypeTurn) || !_hasCheckerOn) {
-                Debug.Log("all ok");
                 MovementController.SetChosenChecker(_position);
+                if (!ButtonsController.IsHidden) {
+                    ButtonsController.HandleButtonsPanelWidth();
+                }
             }
         }
     }
@@ -87,7 +82,7 @@ public class Cell : MonoBehaviour, IPointerClickHandler
     #region Public Methods
 
     public void InitializeCell(bool isActiveCell, BoardPosition newPosition) {
-       image.color = isActiveCell ? activeColor : inactiveColor;
+       _image.color = isActiveCell ? _activeColor : _inactiveColor;
        _isActive = isActiveCell;
        _position = newPosition;
     }
@@ -95,19 +90,19 @@ public class Cell : MonoBehaviour, IPointerClickHandler
     public void HandleCheckerOnMe(CheckerType checker, bool isPlacing = true, bool isMajorChecker = false) {
         switch(checker) {
             case CheckerType.bot: {
-                botChecker.SetActive(isPlacing);
+                _botChecker.SetActive(isPlacing);
                 break;
             }
             case CheckerType.left: {
-                leftChecker.SetActive(isPlacing);
+                _leftChecker.SetActive(isPlacing);
                 break;
             }
             case CheckerType.top: {
-                topChecker.SetActive(isPlacing);
+                _topChecker.SetActive(isPlacing);
                 break;
             }
             case CheckerType.right: {
-                rightChecker.SetActive(isPlacing);
+                _rightChecker.SetActive(isPlacing);
                 break;
             }
             case CheckerType.noType: {
@@ -118,7 +113,7 @@ public class Cell : MonoBehaviour, IPointerClickHandler
 
         _hasCheckerOn = isPlacing;
         _hasMajorCheckerOn = isMajorChecker;
-        majorityState.SetActive(isMajorChecker);
+        _majorityState.SetActive(isMajorChecker);
 
         _typeOfCheckerOn = isPlacing ? checker : CheckerType.noType;
     }
@@ -128,21 +123,21 @@ public class Cell : MonoBehaviour, IPointerClickHandler
         PlayersController.AddCheckerToPlayer(checkerType);
     }
 
-    public void RemoveAnyCheckerFromMe() {
-        botChecker.SetActive(false);
-        topChecker.SetActive(false);
-        leftChecker.SetActive(false);
-        rightChecker.SetActive(false);
-    }
-
     public void HandleCellSelection(bool isSelected) {
-        selectionPaddingObj.SetActive(isSelected);
+        _selectionPaddingObj.SetActive(isSelected);
     }
 
     public bool IsEnemyForCurrent(CheckerType currentPlayerCheckerType) {
         return _hasCheckerOn && (currentPlayerCheckerType != _typeOfCheckerOn);
     }
-    
 
     #endregion
+
+    private void RemoveAnyCheckerFromMe() {
+        _botChecker.SetActive(false);
+        _topChecker.SetActive(false);
+        _leftChecker.SetActive(false);
+        _rightChecker.SetActive(false);
+    }
+
 }

@@ -19,7 +19,7 @@ public class Notification : MonoBehaviour
                 cg.blocksRaycasts = false;
 
                 if (PlayersController.IsGameOver) {
-                    buttonsController.HandleButtonsPanelWidth();
+                    ButtonsController.HandleButtonsPanelWidth();
                 }
             });
         });

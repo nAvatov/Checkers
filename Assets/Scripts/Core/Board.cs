@@ -11,10 +11,9 @@ public enum CheckerType {
 
 public class Board : MonoBehaviour
 {   
-    public static string[] checkersType;
     [SerializeField] private Notification _notificationManager;
-    private const int fourPlayersMatrixSize = 11;
-    private const int twoPlayersMatrixSize = 8;
+    private const int _fourPlayersMatrixSize = 11;
+    private const int _twoPlayersMatrixSize = 8;
     private static int _currentMatrixSize = 0;
 
     private static Cell[,] _matrixOfCells;
@@ -36,31 +35,48 @@ public class Board : MonoBehaviour
         }
     }
 
-    #region UnityMethods
+    #region Unity Methods
 
     private void Awake() {
         _rTransform = GetComponent<RectTransform>();
     }
 
     private void Start() {
-        StartGame(true);
+        CurrentMatrixSize = _twoPlayersMatrixSize;
+        StartGame();
     }
 
     #endregion
 
     #region Public Methods
 
-    public void StartGame(bool isFourPlayers) {
-        _currentMatrixSize = isFourPlayers ? fourPlayersMatrixSize : twoPlayersMatrixSize;
+    public void ChangeGameMode() {
+        CurrentMatrixSize = CurrentMatrixSize == _fourPlayersMatrixSize ? _twoPlayersMatrixSize : _fourPlayersMatrixSize;
+        StartGame();
+    }
+
+    public void RestartGame() {
+        StartGame();
+        if (ButtonsController.IsHidden) {
+            ButtonsController.HandleButtonsPanelWidth();
+        }
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    private void StartGame() {
         HandleCellsAmount();
         
         _matrixOfCells = new Cell[_currentMatrixSize, _currentMatrixSize];
         
         PlayersController.RefreshPlayers();
-        InitializeCells();
+        InitializeMatrixWithCells();
+        PaintCells();
         RefreshBoardCells();
 
-        if (isFourPlayers) {
+        if (CurrentMatrixSize == _fourPlayersMatrixSize) {
             Spawn4Checkers();
         } else {
             Spawn2Checkers();
@@ -68,18 +84,14 @@ public class Board : MonoBehaviour
         
         _notificationManager.ShowNotification(PlayersController.CurrentCheckersTypeTurn.ToString() + ", you first");
     }
-        
-    #endregion
 
-    #region Private Methods
-
-    private void InitializeCells() {
+    private void InitializeMatrixWithCells() {
         int k = 0;
+
         for (int i = 0; i < CurrentMatrixSize; i++) {
             for (int j = 0; j < CurrentMatrixSize; j++) {
                 if (_rTransform.GetChild(k).gameObject.activeSelf) {
-                    _rTransform.GetChild(k).GetComponent<Cell>().InitializeCell(k%2 != 0, new BoardPosition(i, j)); // Paint cells
-                    _matrixOfCells[i, j] = _rTransform.GetChild(k).GetComponent<Cell>(); // Fill the matrix with cells
+                    _matrixOfCells[i, j] = _rTransform.GetChild(k).GetComponent<Cell>();
                     k++;
                 }
             }
@@ -89,20 +101,20 @@ public class Board : MonoBehaviour
     private void Spawn2Checkers()
     {
         for(int i = 0; i < 3; i++ ) {
-            for (int j = i % 2 == 0 ? 1 : 0; j < twoPlayersMatrixSize; j += 2) {
+            for (int j = i % 2 == 0 ? 1 : 0; j < _twoPlayersMatrixSize; j += 2) {
                 _matrixOfCells[i, j].AddCheckerToCell(CheckerType.top);
-                _matrixOfCells[twoPlayersMatrixSize - 1 - i, j].AddCheckerToCell(CheckerType.bot);
+                _matrixOfCells[_twoPlayersMatrixSize - 1 - i, _twoPlayersMatrixSize - 1 - j].AddCheckerToCell(CheckerType.bot);
             }
         }
     }
 
     private void Spawn4Checkers() {
         for(int i = 0; i < 3; i++ ) {
-            for (int j = i + 1; j < fourPlayersMatrixSize - i; j += 2) {
+            for (int j = i + 1; j < _fourPlayersMatrixSize - i; j += 2) {
                 _matrixOfCells[i, j].AddCheckerToCell(CheckerType.top);
                 _matrixOfCells[j, i].AddCheckerToCell(CheckerType.left);
-                _matrixOfCells[fourPlayersMatrixSize - 1 - i, j].AddCheckerToCell(CheckerType.bot);
-                _matrixOfCells[j, fourPlayersMatrixSize - 1 - i].AddCheckerToCell(CheckerType.right);
+                _matrixOfCells[_fourPlayersMatrixSize - 1 - i, j].AddCheckerToCell(CheckerType.bot);
+                _matrixOfCells[j, _fourPlayersMatrixSize - 1 - i].AddCheckerToCell(CheckerType.right);
             }
         }
     }
@@ -116,8 +128,23 @@ public class Board : MonoBehaviour
     }
 
     private void HandleCellsAmount() {
+        DisableAllCells();
         for(int i = 0; i < CurrentMatrixSize * CurrentMatrixSize; i++) {
             _rTransform.GetChild(i).gameObject.SetActive(true);
+        }
+    }
+
+    private void DisableAllCells() {
+        for(int i = 0; i < _rTransform.childCount; i++) {
+            _rTransform.GetChild(i).gameObject.SetActive(false);
+        }
+    }
+
+    private void PaintCells() {
+        for (int i = 0; i < CurrentMatrixSize; i++) {
+            for (int j = 0; j < CurrentMatrixSize; j++) {
+                MatrixOfCells[i, j].InitializeCell((j - i)%2 != 0, new BoardPosition(i, j));
+            }
         }
     }
 

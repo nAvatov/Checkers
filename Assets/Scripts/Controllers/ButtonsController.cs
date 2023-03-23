@@ -3,10 +3,22 @@ using UnityEngine;
 
 public class ButtonsController : MonoBehaviour
 {
-    [SerializeField] private RectTransform _buttonsHolder;
-    private float _revealedWidth = 550f;
+    private static RectTransform _buttonsHolder;
+    private static float _revealedWidth = 550f;
+    private static bool _isHidden = false;
 
-    public void HandleButtonsPanelWidth() {
+    public static bool IsHidden {
+        get {
+            return _isHidden;
+        }
+    }
+
+    private void Awake() {
+        _buttonsHolder = gameObject.GetComponent<RectTransform>();
+    }
+
+    public static void HandleButtonsPanelWidth() {
         _buttonsHolder.DOSizeDelta(new Vector2(Mathf.Abs(_buttonsHolder.sizeDelta.x - _revealedWidth), _buttonsHolder.sizeDelta.y), 0.3f);
+        _isHidden = !_isHidden;
     }
 }
